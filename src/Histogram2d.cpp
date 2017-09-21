@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cstddef>
+#include <iterator>
 
 
 template<typename T>
@@ -14,10 +15,11 @@ Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 		const std::vector<T>& dataX, const std::vector<T>& dataY)
 		: binsX(binsX), binsY(binsY), dataX(dataX), dataY(dataY), count(0)
 {
-	auto boundsX = std::minmax_element(dataX.begin(), dataX.end());
+	min_length = std::min(dataX.size(), dataY.size());
+	auto boundsX = std::minmax_element(dataX.begin(), std::next(dataX.begin(), min_length));
 	minX = *boundsX.first;
 	maxX = *boundsX.second;
-	auto boundsY = std::minmax_element(dataY.begin(), dataY.end());
+	auto boundsY = std::minmax_element(dataY.begin(), std::next(dataY.begin(), min_length));
 	minY = *boundsY.first;
 	maxY = *boundsY.second;
 	check_constructor();
@@ -31,13 +33,13 @@ Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 		: binsX(binsX), binsY(binsY), dataX(dataX), dataY(dataY), count(0)
 {
 	check_constructor();
+	min_length = std::min(dataX.size(), dataY.size());
 	H.resize(binsX, std::vector<unsigned int>(binsY, 0));
 }
 
 template<typename T>
 void Histogram2d<T>::calculate_cpu()
 {
-	std::size_t min_length = std::min(dataX.size(), dataY.size());
 	for (std::size_t i = 0; i < min_length; ++i)
 		transfer(dataX[i], dataY[i]);
 }
@@ -93,6 +95,16 @@ T Histogram2d<T>::getMaxY() const
 template<typename T>
 void Histogram2d<T>::transfer(T x, T y)
 {
+	if (   x >= minX
+		&& x <  maxX
+		&& y >= minY
+		&& y <  maxY)
+	{
+		unsigned int indexX = (x - minX) / (maxX - minX) * binsX;
+		unsigned int indexY = (y - minY) / (maxY - minY) * binsY;
+		++H[indexX][indexY];
+		++count;
+	}
 }
 
 template<typename T>

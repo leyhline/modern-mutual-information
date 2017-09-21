@@ -43,6 +43,7 @@ private:
 	T minY;
 	T maxY;
 	std::vector<std::vector<unsigned int>> H;
+	std::size_t min_length;
 
 	void transfer(T x, T y);
 
