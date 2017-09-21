@@ -2,7 +2,6 @@
  * (c) Copyright 2017, Thomas Leyh <leyht@informatik.uni-freiburg.de>
  */
 
-#define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 #include <vector>
 #include "../src/Histogram1d.h"

@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <cstddef>
 
 
 template<typename T>
@@ -40,7 +41,7 @@ Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min
 template<typename T>
 void Histogram1d<T>::calculate_cpu()
 {
-	for (unsigned int i = 0; i < data.size(); ++i)
+	for (std::size_t i = 0; i < data.size(); ++i)
 		transfer(data[i]);
 }
 

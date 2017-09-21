@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <cstddef>
 
 
 template<typename T>
@@ -36,6 +37,9 @@ Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 template<typename T>
 void Histogram2d<T>::calculate_cpu()
 {
+	std::size_t min_length = std::min(dataX.size(), dataY.size());
+	for (std::size_t i = 0; i < min_length; ++i)
+		transfer(dataX[i], dataY[i]);
 }
 
 template<typename T>
