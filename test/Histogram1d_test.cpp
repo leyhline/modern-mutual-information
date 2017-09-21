@@ -38,4 +38,7 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	hist_1bin.calculate_cpu();
 	auto result_1bin = hist_1bin.getHistogram();
 	CHECK( result_1bin[0] == 1000 );
+
+	Histogram1d<float> hist_copy(1, input, -500, 500, result_1bin, 1000);
+	CHECK( hist_copy.getHistogram()[0] == 1000 );
 }
