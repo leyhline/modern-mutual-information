@@ -3,8 +3,8 @@
  */
 
 #pragma once
-#include <vector>
 
+#include <vector>
 
 /**
  * A class for 1D-histogram calculation.

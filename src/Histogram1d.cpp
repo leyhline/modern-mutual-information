@@ -3,11 +3,11 @@
  */
 
 #include "Histogram1d.h"
+
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
 #include <cstddef>
-
 
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)

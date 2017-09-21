@@ -3,8 +3,12 @@
  */
 
 #pragma once
-#include <vector>
 
+#include "Histogram1d.h"
+
+#include <vector>
+#include <cstddef>
+#include <utility>
 
 template<typename T>
 	// requires Integral<T>
@@ -26,6 +30,8 @@ public:
 	unsigned int getCount() const;
 
 	const std::vector<std::vector<unsigned int>>& getHistogram() const;
+
+	std::pair<Histogram1d<T>, Histogram1d<T>> reduce1d() const;
 
 	T getMinX() const;
 	T getMaxX() const;

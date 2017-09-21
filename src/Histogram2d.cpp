@@ -3,12 +3,13 @@
  */
 
 #include "Histogram2d.h"
+
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
 #include <cstddef>
 #include <iterator>
-
+#include <utility>
 
 template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
@@ -113,6 +114,24 @@ void Histogram2d<T>::transfer(T x, T y)
 		++H[indexX][indexY];
 		++count;
 	}
+}
+
+template<typename T>
+std::pair<Histogram1d<T>, Histogram1d<T>> Histogram2d<T>::reduce1d() const
+{
+	std::vector<unsigned int> vecX(binsX, 0);
+	std::vector<unsigned int> vecY(binsY, 0);
+	for (unsigned int x = 0; x < binsX; ++x)
+	{
+		for (unsigned int y = 0; y < binsY; ++y)
+		{
+			vecX[x] += H[x][y];
+			vecY[y] += H[x][y];
+		}
+	}
+	return std::pair<Histogram1d<T>, Histogram1d<T>>(
+			Histogram1d<T>(binsX, dataX, minX, maxX, vecX, count),
+			Histogram1d<T>(binsY, dataY, minY, maxY, vecY, count));
 }
 
 template<typename T>

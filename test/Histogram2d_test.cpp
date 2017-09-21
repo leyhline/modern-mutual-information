@@ -40,4 +40,13 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 				CHECK( result[x][y] == 0 );
 		}
 	}
+	auto hists1d = hist.reduce1d();
+	for (auto value : hists1d.first.getHistogram())
+	{
+		CHECK( value == 80 );
+	}
+	for (auto value : hists1d.second.getHistogram())
+	{
+		CHECK( value == 80 );
+	}
 }
