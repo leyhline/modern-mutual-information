@@ -96,12 +96,20 @@ template<typename T>
 void Histogram2d<T>::transfer(T x, T y)
 {
 	if (   x >= minX
-		&& x <  maxX
+		&& x <= maxX
 		&& y >= minY
-		&& y <  maxY)
+		&& y <= maxY)
 	{
-		unsigned int indexX = (x - minX) / (maxX - minX) * binsX;
-		unsigned int indexY = (y - minY) / (maxY - minY) * binsY;
+		unsigned int indexX;
+		if (x == maxX)
+			indexX = binsX - 1;
+		else
+			indexX = (x - minX) / (maxX - minX) * binsX;
+		unsigned int indexY;
+		if (y == maxY)
+			indexY = binsY - 1;
+		else
+			indexY = (y - minY) / (maxY - minY) * binsY;
 		++H[indexX][indexY];
 		++count;
 	}
