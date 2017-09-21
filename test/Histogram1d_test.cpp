@@ -21,6 +21,7 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	CHECK( hist.getBins() == 10 );
 	CHECK( hist.getMin() == Approx(-500.f) );
 	CHECK( hist.getMax() == Approx(499.f) );
+	CHECK( hist.getCount() == 1000 );
 	CHECK( result[0] == 100 );
 	CHECK( result[1] == 100 );
 	CHECK( result[2] == 100 );

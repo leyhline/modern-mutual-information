@@ -15,11 +15,11 @@ public:
 
 	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max);
 
-	~Histogram1d();
-
 	void calculate_cpu();
 
 	unsigned int getBins() const;
+
+	unsigned int getCount() const;
 
 	const std::vector<unsigned int>& getHistogram() const;
 
@@ -28,7 +28,8 @@ public:
 	T getMin() const;
 
 private:
-	unsigned int bins;
+	const unsigned int bins;
+	unsigned int count;
 	const std::vector<T>& data;
 	T min;
 	T max;

@@ -5,16 +5,13 @@
 #include "Histogram1d.h"
 #include <vector>
 #include <algorithm>
-#include <iterator>
-#include <functional>
-#include <cmath>
 
 
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)
-	: bins(bins), data(data)
+	: bins(bins), data(data), count(0)
 {
-	auto bounds = std::minmax(data.begin(), data.end());
+	auto bounds = std::minmax_element(data.begin(), data.end());
 	min = *bounds.first;
 	max = *bounds.second;
 	H.resize(bins, 0);
@@ -22,14 +19,9 @@ Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)
 
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max)
-	: bins(bins), data(data), min(min), max(max)
+	: bins(bins), data(data), min(min), max(max), count(0)
 {
 	H.resize(bins, 0);
-}
-
-template<typename T>
-Histogram1d<T>::~Histogram1d()
-{
 }
 
 template<typename T>
@@ -43,6 +35,12 @@ template<typename T>
 unsigned int Histogram1d<T>::getBins() const
 {
 	return bins;
+}
+
+template<typename T>
+unsigned int Histogram1d<T>::getCount() const
+{
+	return count;
 }
 
 template<typename T>
@@ -66,12 +64,21 @@ T Histogram1d<T>::getMin() const
 template<typename T>
 void Histogram1d<T>::transfer(T value)
 {
-	if (value >= min && value <= max)
+	if (value >= min && value < max)
 	{
-		unsigned int index = std::lround((value - min) / (max - min) * (bins - 1));
+		T normalized = (value - min) / (max - min);
+		unsigned int index = normalized * bins;  // Implicit conversion to integer.
 		++H[index];
+		++count;
+	}
+	else if (value == max)
+	{
+		++H.back();
+		++count;
 	}
 }
 
 
+// Compile for these instances.
 template class Histogram1d<float>;
+template class Histogram1d<double>;
