@@ -5,6 +5,7 @@
 #include "Histogram1d.h"
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 
 template<typename T>
@@ -14,6 +15,7 @@ Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)
 	auto bounds = std::minmax_element(data.begin(), data.end());
 	min = *bounds.first;
 	max = *bounds.second;
+	check_constructor();
 	H.resize(bins, 0);
 }
 
@@ -21,7 +23,18 @@ template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max)
 	: bins(bins), data(data), min(min), max(max), count(0)
 {
+	check_constructor();
 	H.resize(bins, 0);
+}
+
+template<typename T>
+Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max,
+		std::vector<unsigned int> H, unsigned int count)
+		: bins(bins), data(data), min(min), max(max), count(count), H(H)
+{
+	if (H.size() != bins)
+		throw std::invalid_argument("Argument bins has to be of same size as H vector.");
+	check_constructor();
 }
 
 template<typename T>
@@ -78,6 +91,16 @@ void Histogram1d<T>::transfer(T value)
 	}
 }
 
+template<typename T>
+void Histogram1d<T>::check_constructor() const
+{
+	if (min >= max)
+		throw std::logic_error("min has to be smaller than max.");
+	if (data.size() == 0)
+		throw std::logic_error("data must not be an empty vector.");
+	if (bins < 1)
+		throw std::invalid_argument("There must be at least one bin.");
+}
 
 // Compile for these instances.
 template class Histogram1d<float>;

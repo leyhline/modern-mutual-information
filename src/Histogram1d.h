@@ -27,11 +27,23 @@ public:
 	 * Constructor for known range of values.
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param bins Number of bins.
-	 * @param data Reference to original data vector.
+	 * @param data Reference to original 1D data vector.
 	 * @param min Minimum value in data array.
 	 * @param max Maximum value in data array.
 	 */
 	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max);
+
+	/**
+	 * Construct class from already available histogram data.
+	 * @param bins Number of bins.
+	 * @param data Reference to original 1D data vector.
+	 * @param min Minimum value in data array.
+	 * @param max Maximum value in data array.
+	 * @param H Histogram vector holding the bins.
+	 * @param Total number of values in histogram.
+	 */
+	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max,
+			std::vector<unsigned int> H, unsigned int count);
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
@@ -76,4 +88,6 @@ private:
 	 * @param value Increment histogram for this value.
 	 */
 	void transfer(T value);
+
+	void check_constructor() const;
 };
