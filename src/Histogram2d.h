@@ -9,7 +9,12 @@
 #include <vector>
 #include <cstddef>
 #include <utility>
+#include <memory>
 
+/**
+ * A class for 2D-histogram calculation.
+ * Usable for all integral types.
+ */
 template<typename T>
 	// requires Integral<T>
 class Histogram2d
@@ -31,7 +36,7 @@ public:
 
 	const std::vector<std::vector<unsigned int>>& getHistogram() const;
 
-	std::pair<Histogram1d<T>, Histogram1d<T>> reduce1d() const;
+	std::pair<const Histogram1d<T>*, const Histogram1d<T>*> reduce1d();
 
 	T getMinX() const;
 	T getMaxX() const;
@@ -50,6 +55,8 @@ private:
 	T maxY;
 	std::vector<std::vector<unsigned int>> H;
 	std::size_t min_length;
+	std::unique_ptr<Histogram1d<T>> hist1dX;
+	std::unique_ptr<Histogram1d<T>> hist1dY;
 
 	void transfer(T x, T y);
 

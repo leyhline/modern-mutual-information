@@ -40,13 +40,18 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 				CHECK( result[x][y] == 0 );
 		}
 	}
+	// Check if calculation works.
 	auto hists1d = hist.reduce1d();
-	for (auto value : hists1d.first.getHistogram())
+	for (auto value : hists1d.first->getHistogram())
 	{
 		CHECK( value == 80 );
 	}
-	for (auto value : hists1d.second.getHistogram())
+	for (auto value : hists1d.second->getHistogram())
 	{
 		CHECK( value == 80 );
 	}
+	// Check if lazy evaluation works.
+	auto hist1dlazy = hist.reduce1d();
+	CHECK ( hists1d.first == hist1dlazy.first );
+	CHECK ( hists1d.second == hist1dlazy.second );
 }

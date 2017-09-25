@@ -117,21 +117,24 @@ void Histogram2d<T>::transfer(T x, T y)
 }
 
 template<typename T>
-std::pair<Histogram1d<T>, Histogram1d<T>> Histogram2d<T>::reduce1d() const
+std::pair<const Histogram1d<T>*, const Histogram1d<T>*> Histogram2d<T>::reduce1d()
 {
-	std::vector<unsigned int> vecX(binsX, 0);
-	std::vector<unsigned int> vecY(binsY, 0);
-	for (unsigned int x = 0; x < binsX; ++x)
+	if (!hist1dX && !hist1dY)
 	{
-		for (unsigned int y = 0; y < binsY; ++y)
+		std::vector<unsigned int> vecX(binsX, 0);
+		std::vector<unsigned int> vecY(binsY, 0);
+		for (unsigned int x = 0; x < binsX; ++x)
 		{
-			vecX[x] += H[x][y];
-			vecY[y] += H[x][y];
+			for (unsigned int y = 0; y < binsY; ++y)
+			{
+				vecX[x] += H[x][y];
+				vecY[y] += H[x][y];
+			}
 		}
+		hist1dX.reset(new Histogram1d<T>(binsX, dataX, minX, maxX, vecX, count));
+		hist1dY.reset(new Histogram1d<T>(binsY, dataY, minY, maxY, vecY, count));
 	}
-	return std::pair<Histogram1d<T>, Histogram1d<T>>(
-			Histogram1d<T>(binsX, dataX, minX, maxX, vecX, count),
-			Histogram1d<T>(binsY, dataY, minY, maxY, vecY, count));
+	return std::pair<const Histogram1d<T>*, const Histogram1d<T>*>(hist1dX.get(), hist1dY.get());
 }
 
 template<typename T>
