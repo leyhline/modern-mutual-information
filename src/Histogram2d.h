@@ -20,27 +20,84 @@ template<typename T>
 class Histogram2d
 {
 public:
+	/**
+	 * Constructor for unknown range of values.
+	 * If range is known consider the other constructor because of better performance.
+	 * @param binsX Number of bins on histogram's x-axis.
+	 * @param binsY Number of bins on histogram's y-axis.
+	 * @param dataX Reference to first data vector.
+	 * @param dataY Reference to second data vector.
+	 */
 	Histogram2d(unsigned int binsX, unsigned int binsY,
 			const std::vector<T>& dataX, const std::vector<T>& dataY);
 
+	/**
+	 * Constructor for known range of values.
+	 * If there are values outside of [min,max] they are ignored at insertion.
+	 * @param binsX Number of bins on histogram's x-axis.
+	 * @param binsY Number of bins on histogram's y-axis.
+	 * @param dataX Reference to first data vector.
+	 * @param minX Minimum value in first data vector.
+	 * @param maxX Maximum value in first data vector.
+	 * @param dataY Reference to second data vector.
+	 * @param minY Minimum value in second data vector.
+	 * @param maxY Maximum value in second data vector.
+	 */
 	Histogram2d(unsigned int binsX, unsigned int binsY,
 			const std::vector<T>& dataX, T minX, T maxX,
 			const std::vector<T>& dataY, T minY, T maxY);
 
+	/**
+	 * Calculate the histogram single-threaded on the CPU.
+	 */
 	void calculate_cpu();
 
+	/*
+	 * Get bin count of x-axis as specified in constructor.
+	 */
 	unsigned int getBinsX() const;
+
+	/*
+	 * Get bin count of y-axis as specified in constructor.
+	 */
 	unsigned int getBinsY() const;
 
+	/**
+	 * Get total number of values inserted into histogram.
+	 */
 	unsigned int getCount() const;
 
+	/**
+	 * Get reference to histogram vector.
+	 */
 	const std::vector<std::vector<unsigned int>>& getHistogram() const;
 
+	/**
+	 * Calculate two 1-D histograms from 2-D histogram.
+	 * This is done lazily, meaning the calculation is only done the first time
+	 * the method is called.
+	 * @return A pair of pointers to the corresponding Histogram1d classes.
+	 */
 	std::pair<const Histogram1d<T>*, const Histogram1d<T>*> reduce1d();
 
+	/**
+	 * Get (supposed) minimum value of the first data vector.
+	 */
 	T getMinX() const;
+
+	/**
+	 * Get (supposed) maximum value of the first data vector.
+	 */
 	T getMaxX() const;
+
+	/**
+	 * Get (supposed) minimum value of the second data vector.
+	 */
 	T getMinY() const;
+
+	/**
+	 * Get (supposed) maximum value of the second data vector.
+	 */
 	T getMaxY() const;
 
 private:
@@ -58,6 +115,10 @@ private:
 	std::unique_ptr<Histogram1d<T>> hist1dX;
 	std::unique_ptr<Histogram1d<T>> hist1dY;
 
+	/**
+	 * Transfer function for actually doing the insertion into H.
+	 * Use x and y parameters to calculate index at which to increment.
+	 */
 	void transfer(T x, T y);
 
 	void check_constructor() const;

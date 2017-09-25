@@ -28,8 +28,8 @@ public:
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param bins Number of bins.
 	 * @param data Reference to original 1D data vector.
-	 * @param min Minimum value in data array.
-	 * @param max Maximum value in data array.
+	 * @param min Minimum value in data vector.
+	 * @param max Maximum value in data vector.
 	 */
 	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max);
 

@@ -31,7 +31,8 @@ template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 		const std::vector<T>& dataX, T minX, T maxX,
 		const std::vector<T>& dataY, T minY, T maxY)
-		: binsX(binsX), binsY(binsY), dataX(dataX), dataY(dataY), count(0)
+		: binsX(binsX), binsY(binsY), dataX(dataX), minX(minX), maxX(maxX),
+		                              dataY(dataY), minY(minY), maxY(maxY), count(0)
 {
 	check_constructor();
 	min_length = std::min(dataX.size(), dataY.size());
