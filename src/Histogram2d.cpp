@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <iterator>
 #include <utility>
+#include <cmath>
 
 template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
@@ -118,9 +119,9 @@ void Histogram2d<T>::transfer(T x, T y)
 }
 
 template<typename T>
-std::pair<const Histogram1d<T>*, const Histogram1d<T>*> Histogram2d<T>::reduce1d()
+std::pair<const Histogram1d<T>*, const Histogram1d<T>*> Histogram2d<T>::reduce1d(bool force /* false */)
 {
-	if (!hist1dX && !hist1dY)
+	if (force || !hist1dX || !hist1dY)
 	{
 		std::vector<unsigned int> vecX(binsX, 0);
 		std::vector<unsigned int> vecY(binsY, 0);
@@ -153,6 +154,31 @@ void Histogram2d<T>::check_constructor() const
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
 		throw std::invalid_argument("There must be at least one binY.");
+}
+
+template <typename T>
+const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
+{
+	if (force || !mutual_information)
+	{
+		T mi = 0;
+		auto h = reduce1d(force);
+		for (unsigned int x = 0; x < binsX; ++x)
+		{
+			for (unsigned int y = 0; y < binsY; ++y)
+			{
+				if (H[x][y] > 0)
+				{
+					T p_xy = T(H[x][y]) / count;
+					T p_x =  T(h.first->getHistogram()[x]) / count;
+					T p_y = T(h.second->getHistogram()[y]) / count;
+					mi += p_xy * std::log2(p_xy / (p_x * p_y));
+				}
+			}
+		}
+		mutual_information.reset(new T(mi));
+	}
+	return mutual_information.get();
 }
 
 // Compile for these instances.

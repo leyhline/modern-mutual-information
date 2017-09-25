@@ -76,9 +76,10 @@ public:
 	 * Calculate two 1-D histograms from 2-D histogram.
 	 * This is done lazily, meaning the calculation is only done the first time
 	 * the method is called.
+	 * @param force Don't use lazy evaluation and force (re)calculation.
 	 * @return A pair of pointers to the corresponding Histogram1d classes.
 	 */
-	std::pair<const Histogram1d<T>*, const Histogram1d<T>*> reduce1d();
+	std::pair<const Histogram1d<T>*, const Histogram1d<T>*> reduce1d(bool force=false);
 
 	/**
 	 * Get (supposed) minimum value of the first data vector.
@@ -100,6 +101,15 @@ public:
 	 */
 	T getMaxY() const;
 
+	/**
+	 * Calculate mutual information.
+	 * This works lazily like reduce1d. The actual calculation is only done the
+	 * first time this method is called.
+	 * @param force Don't use lazy evaluation and force (re)calculation.
+	 * @return A pointer to the mutual information value.
+	 */
+	const T* calculate_mutual_information(bool force=false);
+
 private:
 	const unsigned int binsX;
 	const unsigned int binsY;
@@ -114,6 +124,7 @@ private:
 	std::size_t min_length;
 	std::unique_ptr<Histogram1d<T>> hist1dX;
 	std::unique_ptr<Histogram1d<T>> hist1dY;
+	std::unique_ptr<T> mutual_information;
 
 	/**
 	 * Transfer function for actually doing the insertion into H.

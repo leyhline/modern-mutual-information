@@ -54,4 +54,9 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	auto hist1dlazy = hist.reduce1d();
 	CHECK ( hists1d.first == hist1dlazy.first );
 	CHECK ( hists1d.second == hist1dlazy.second );
+	auto mi = hist.calculate_mutual_information();
+	CHECK ( *mi == Approx(3.3219) );
+	auto mi_lazy = hist.calculate_mutual_information();
+	CHECK ( *mi_lazy == Approx(3.3219) );
+	CHECK ( mi == mi_lazy );
 }
