@@ -37,32 +37,36 @@ public:
 	 * If range is known consider the other constructor because of better performance.
 	 * @param binsX Number of bins on histogram's x-axis.
 	 * @param binsY Number of bins on histogram's y-axis.
-	 * @param dataX Reference to first data vector.
-	 * @param dataY Reference to second data vector.
+	 * @param beginX
+	 * @param endX
+	 * @param beginY
+	 * @param endY
 	 */
+	template<typename Iterator>
 	Histogram2d(unsigned int binsX, unsigned int binsY,
-			const std::vector<T>& dataX, const std::vector<T>& dataY);
+				const Iterator beginX, const Iterator endX,
+				const Iterator beginY, const Iterator endY);
 
 	/**
 	 * Constructor for known range of values.
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param binsX Number of bins on histogram's x-axis.
 	 * @param binsY Number of bins on histogram's y-axis.
-	 * @param dataX Reference to first data vector.
 	 * @param minX Minimum value in first data vector.
 	 * @param maxX Maximum value in first data vector.
-	 * @param dataY Reference to second data vector.
 	 * @param minY Minimum value in second data vector.
 	 * @param maxY Maximum value in second data vector.
 	 */
 	Histogram2d(unsigned int binsX, unsigned int binsY,
-			const std::vector<T>& dataX, T minX, T maxX,
-			const std::vector<T>& dataY, T minY, T maxY);
+			    T minX, T maxX,
+			    T minY, T maxY);
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
 	 */
-	void calculate_cpu();
+	template<typename Iterator>
+	void calculate_cpu(const Iterator beginX, const Iterator endX,
+					   const Iterator beginY, const Iterator endY);
 
 	/*
 	 * Get bin count of x-axis as specified in constructor.
@@ -126,14 +130,11 @@ private:
 	const unsigned int binsX;
 	const unsigned int binsY;
 	unsigned int count;
-	const std::vector<T>& dataX;
-	const std::vector<T>& dataY;
 	T minX;
 	T maxX;
 	T minY;
 	T maxY;
 	std::vector<std::vector<unsigned int>> H;
-	std::size_t min_length;
 	std::unique_ptr<Histogram1d<T>> hist1dX;
 	std::unique_ptr<Histogram1d<T>> hist1dY;
 	std::unique_ptr<T> mutual_information;

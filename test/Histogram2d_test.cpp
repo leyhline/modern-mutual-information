@@ -31,7 +31,7 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	{
 		inputY[i] = float(i) - 400.f;
 	}
-	Histogram2d<float> hist(10, 10, inputX, inputY);
+	Histogram2d<float> hist(10, 10, inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
 	REQUIRE( hist.getBinsX() == 10 );
 	REQUIRE( hist.getBinsX() == 10 );
 	REQUIRE( hist.getMinX() == Approx(-500.f) );
@@ -39,7 +39,7 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	REQUIRE( hist.getMinY() == Approx(-400.f) );
 	REQUIRE( hist.getMaxY() == Approx(399.f) );
 	CHECK( hist.getCount() == 0 );
-	hist.calculate_cpu();
+	hist.calculate_cpu(inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
 	CHECK( hist.getCount() == 800 );
 	auto result = hist.getHistogram();
 	for (int x = 0; x < 10; ++x)

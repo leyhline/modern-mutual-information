@@ -23,17 +23,29 @@
 #include <iterator>
 #include <utility>
 #include <cmath>
+#include <iostream>
+
+template<typename Iterator>
+inline void check_for_same_size(const Iterator beginX, const Iterator endX,
+								const Iterator beginY, const Iterator endY)
+{
+	std::cout << std::distance(beginX, endX) << std::distance(beginY, endY) << std::endl;
+	if (std::distance(beginX, endX) != std::distance(beginY, endY))
+		throw std::logic_error("Containers referenced by iterators must have the same size.");
+}
 
 template<typename T>
+template<typename Iterator>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
-		const std::vector<T>& dataX, const std::vector<T>& dataY)
-		: binsX(binsX), binsY(binsY), dataX(dataX), dataY(dataY), count(0)
+							const Iterator beginX, const Iterator endX,
+							const Iterator beginY, const Iterator endY)
+		: binsX(binsX), binsY(binsY), count(0)
 {
-	min_length = std::min(dataX.size(), dataY.size());
-	auto boundsX = std::minmax_element(dataX.begin(), std::next(dataX.begin(), min_length));
+	check_for_same_size(beginX, endX, beginY, endY);
+	auto boundsX = std::minmax_element(beginX, endX);
 	minX = *boundsX.first;
 	maxX = *boundsX.second;
-	auto boundsY = std::minmax_element(dataY.begin(), std::next(dataY.begin(), min_length));
+	auto boundsY = std::minmax_element(beginY, endY);
 	minY = *boundsY.first;
 	maxY = *boundsY.second;
 	check_constructor();
@@ -42,21 +54,25 @@ Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 
 template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
-		const std::vector<T>& dataX, T minX, T maxX,
-		const std::vector<T>& dataY, T minY, T maxY)
-		: binsX(binsX), binsY(binsY), dataX(dataX), minX(minX), maxX(maxX),
-		                              dataY(dataY), minY(minY), maxY(maxY), count(0)
+							T minX, T maxX,
+							T minY, T maxY)
+		: binsX(binsX), binsY(binsY), minX(minX), maxX(maxX),
+		                              minY(minY), maxY(maxY), count(0)
 {
 	check_constructor();
-	min_length = std::min(dataX.size(), dataY.size());
 	H.resize(binsX, std::vector<unsigned int>(binsY, 0));
 }
 
 template<typename T>
-void Histogram2d<T>::calculate_cpu()
+template<typename Iterator>
+void Histogram2d<T>::calculate_cpu(const Iterator beginX, const Iterator endX,
+							       const Iterator beginY, const Iterator endY)
 {
-	for (std::size_t i = 0; i < min_length; ++i)
-		transfer(dataX[i], dataY[i]);
+	check_for_same_size(beginX, endX, beginY, endY);
+	for (auto iX = beginX, iY = beginY; iX != endX; ++iX, ++iY)
+	{
+		transfer(*iX, *iY);
+	}
 }
 
 template<typename T>
@@ -158,10 +174,6 @@ void Histogram2d<T>::check_constructor() const
 		throw std::logic_error("minX has to be smaller than maxX.");
 	if (minY >= maxY)
 		throw std::logic_error("minY has to be smaller than maxY.");
-	if (dataX.size() == 0)
-		throw std::logic_error("dataX must not be an empty vector.");
-	if (dataY.size() == 0)
-		throw std::logic_error("dataY must not be an empty vector.");
 	if (binsX < 1)
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
@@ -195,4 +207,3 @@ const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
 
 // Compile for these instances.
 template class Histogram2d<float>;
-template class Histogram2d<double>;

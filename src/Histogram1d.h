@@ -63,7 +63,7 @@ public:
 	 * @param end Iterator to the end of the data.
 	 */
 	template<typename Iterator>
-	void calculate_cpu(Iterator begin, Iterator end);
+	void calculate_cpu(const Iterator begin, const Iterator end);
 
 	/**
 	 * Get bin count as specified in constructor.

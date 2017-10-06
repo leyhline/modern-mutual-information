@@ -53,7 +53,7 @@ Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max,
 
 template<typename T>
 template<typename Iterator>
-void Histogram1d<T>::calculate_cpu(Iterator begin, Iterator end)
+void Histogram1d<T>::calculate_cpu(const Iterator begin, const Iterator end)
 {
 	for (auto i = begin; i != end; ++i)
 		transfer(*i);
@@ -117,4 +117,4 @@ void Histogram1d<T>::check_constructor() const
 
 // Compile for these instances.
 template class Histogram1d<float>;
-template class Histogram1d<double>;
+
