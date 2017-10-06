@@ -17,40 +17,11 @@
 #include "Histogram2d.h"
 
 #include <vector>
-#include <algorithm>
 #include <stdexcept>
 #include <cstddef>
 #include <iterator>
 #include <utility>
 #include <cmath>
-#include <iostream>
-
-template<typename Iterator>
-inline void check_for_same_size(const Iterator beginX, const Iterator endX,
-								const Iterator beginY, const Iterator endY)
-{
-	std::cout << std::distance(beginX, endX) << std::distance(beginY, endY) << std::endl;
-	if (std::distance(beginX, endX) != std::distance(beginY, endY))
-		throw std::logic_error("Containers referenced by iterators must have the same size.");
-}
-
-template<typename T>
-template<typename Iterator>
-Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
-							const Iterator beginX, const Iterator endX,
-							const Iterator beginY, const Iterator endY)
-		: binsX(binsX), binsY(binsY), count(0)
-{
-	check_for_same_size(beginX, endX, beginY, endY);
-	auto boundsX = std::minmax_element(beginX, endX);
-	minX = *boundsX.first;
-	maxX = *boundsX.second;
-	auto boundsY = std::minmax_element(beginY, endY);
-	minY = *boundsY.first;
-	maxY = *boundsY.second;
-	check_constructor();
-	H.resize(binsX, std::vector<unsigned int>(binsY, 0));
-}
 
 template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
@@ -68,7 +39,8 @@ template<typename Iterator>
 void Histogram2d<T>::calculate_cpu(const Iterator beginX, const Iterator endX,
 							       const Iterator beginY, const Iterator endY)
 {
-	check_for_same_size(beginX, endX, beginY, endY);
+	if (std::distance(beginX, endX) != std::distance(beginY, endY))
+		throw std::logic_error("Containers referenced by iterators must have the same size.");
 	for (auto iX = beginX, iY = beginY; iX != endX; ++iX, ++iY)
 	{
 		transfer(*iX, *iY);
@@ -207,3 +179,5 @@ const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
 
 // Compile for these instances.
 template class Histogram2d<float>;
+typedef std::vector<float>::iterator fvec_iter;
+template void Histogram2d<float>::calculate_cpu(fvec_iter, fvec_iter, fvec_iter, fvec_iter);

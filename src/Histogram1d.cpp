@@ -17,21 +17,8 @@
 #include "Histogram1d.h"
 
 #include <vector>
-#include <algorithm>
 #include <stdexcept>
 #include <cstddef>
-
-template<typename T>
-template<typename Iterator>
-Histogram1d<T>::Histogram1d(unsigned int bins, const Iterator begin, const Iterator end)
-	: bins(bins), count(0)
-{
-	auto bounds = std::minmax_element(begin, end);
-	min = *bounds.first;
-	max = *bounds.second;
-	check_constructor();
-	H.resize(bins, 0);
-}
 
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
@@ -117,4 +104,5 @@ void Histogram1d<T>::check_constructor() const
 
 // Compile for these instances.
 template class Histogram1d<float>;
-
+typedef std::vector<float>::iterator fvec_iter;
+template void Histogram1d<float>::calculate_cpu(fvec_iter, fvec_iter);

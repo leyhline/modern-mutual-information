@@ -21,8 +21,8 @@
 
 TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram2d]" )
 {
-	std::vector<float> inputX(1000);
-	for (int i = 0; i < 1000; ++i)
+	std::vector<float> inputX(800);
+	for (int i = 0; i < 800; ++i)
 	{
 		inputX[i] = float(i) - 500.f;
 	}
@@ -31,7 +31,7 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	{
 		inputY[i] = float(i) - 400.f;
 	}
-	Histogram2d<float> hist(10, 10, inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
+	Histogram2d<float> hist(10, 10, inputX.front(), inputX.back(), inputY.front(), inputY.back());
 	REQUIRE( hist.getBinsX() == 10 );
 	REQUIRE( hist.getBinsX() == 10 );
 	REQUIRE( hist.getMinX() == Approx(-500.f) );

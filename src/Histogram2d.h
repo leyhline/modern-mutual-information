@@ -33,21 +33,6 @@ class Histogram2d
 {
 public:
 	/**
-	 * Constructor for unknown range of values.
-	 * If range is known consider the other constructor because of better performance.
-	 * @param binsX Number of bins on histogram's x-axis.
-	 * @param binsY Number of bins on histogram's y-axis.
-	 * @param beginX
-	 * @param endX
-	 * @param beginY
-	 * @param endY
-	 */
-	template<typename Iterator>
-	Histogram2d(unsigned int binsX, unsigned int binsY,
-				const Iterator beginX, const Iterator endX,
-				const Iterator beginY, const Iterator endY);
-
-	/**
 	 * Constructor for known range of values.
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param binsX Number of bins on histogram's x-axis.

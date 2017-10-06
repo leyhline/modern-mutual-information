@@ -26,7 +26,7 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	{
 		input[i] = float(i) - 500.f;
 	}
-	Histogram1d<float> hist(10, input.begin(), input.end());
+	Histogram1d<float> hist(10, -500.f, 499.f);
 	REQUIRE( hist.getBins() == 10 );
 	REQUIRE( hist.getMin() == Approx(-500.f) );
 	REQUIRE( hist.getMax() == Approx(499.f) );

@@ -28,16 +28,6 @@ class Histogram1d
 {
 public:
 	/**
-	 * Constructor for unknown range of values.
-	 * If range is known consider the other constructor because of better performance.
-	 * @param bins Number of bins.
-	 * @param begin Iterator to the beginning of the data.
-	 * @param end Iterator to the end of the data.
-	 */
-	template<typename Iterator>
-	Histogram1d(unsigned int bins, const Iterator begin, const Iterator end);
-
-	/**
 	 * Constructor for known range of values.
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param bins Number of bins.
