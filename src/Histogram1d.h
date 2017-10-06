@@ -31,36 +31,39 @@ public:
 	 * Constructor for unknown range of values.
 	 * If range is known consider the other constructor because of better performance.
 	 * @param bins Number of bins.
-	 * @param data Reference to original data vector.
+	 * @param begin Iterator to the beginning of the data.
+	 * @param end Iterator to the end of the data.
 	 */
-	Histogram1d(unsigned int bins, const std::vector<T>& data);
+	template<typename Iterator>
+	Histogram1d(unsigned int bins, const Iterator begin, const Iterator end);
 
 	/**
 	 * Constructor for known range of values.
 	 * If there are values outside of [min,max] they are ignored at insertion.
 	 * @param bins Number of bins.
-	 * @param data Reference to original 1D data vector.
 	 * @param min Minimum value in data vector.
 	 * @param max Maximum value in data vector.
 	 */
-	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max);
+	Histogram1d(unsigned int bins, T min, T max);
 
 	/**
 	 * Construct class from already available histogram data.
 	 * @param bins Number of bins.
-	 * @param data Reference to original 1D data vector.
 	 * @param min Minimum value in data array.
 	 * @param max Maximum value in data array.
 	 * @param H Histogram vector holding the bins.
-	 * @param Total number of values in histogram.
+	 * @param count Total number of values in histogram.
 	 */
-	Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max,
+	Histogram1d(unsigned int bins, T min, T max,
 			std::vector<unsigned int> H, unsigned int count);
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
+	 * @param begin Iterator to the beginning of the data.
+	 * @param end Iterator to the end of the data.
 	 */
-	void calculate_cpu();
+	template<typename Iterator>
+	void calculate_cpu(Iterator begin, Iterator end);
 
 	/**
 	 * Get bin count as specified in constructor.
@@ -90,7 +93,6 @@ public:
 private:
 	const unsigned int bins;
 	unsigned int count;
-	const std::vector<T>& data;
 	T min;
 	T max;
 	std::vector<unsigned int> H;

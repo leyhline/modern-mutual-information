@@ -26,12 +26,12 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	{
 		input[i] = float(i) - 500.f;
 	}
-	Histogram1d<float> hist(10, input);
+	Histogram1d<float> hist(10, input.begin(), input.end());
 	REQUIRE( hist.getBins() == 10 );
 	REQUIRE( hist.getMin() == Approx(-500.f) );
 	REQUIRE( hist.getMax() == Approx(499.f) );
 	CHECK( hist.getCount() == 0 );
-	hist.calculate_cpu();
+	hist.calculate_cpu(input.begin(), input.end());
 	auto result = hist.getHistogram();
 	CHECK( hist.getCount() == 1000 );
 	CHECK( result[0] == 100 );
@@ -45,11 +45,11 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	CHECK( result[8] == 100 );
 	CHECK( result[9] == 100 );
 
-	Histogram1d<float> hist_1bin(1, input, -500, 500);
-	hist_1bin.calculate_cpu();
+	Histogram1d<float> hist_1bin(1, -500, 500);
+	hist_1bin.calculate_cpu(input.begin(), input.end());
 	auto result_1bin = hist_1bin.getHistogram();
 	CHECK( result_1bin[0] == 1000 );
 
-	Histogram1d<float> hist_copy(1, input, -500, 500, result_1bin, 1000);
+	Histogram1d<float> hist_copy(1, -500, 500, result_1bin, 1000);
 	CHECK( hist_copy.getHistogram()[0] == 1000 );
 }

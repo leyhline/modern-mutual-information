@@ -22,10 +22,11 @@
 #include <cstddef>
 
 template<typename T>
-Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)
-	: bins(bins), data(data), count(0)
+template<typename Iterator>
+Histogram1d<T>::Histogram1d(unsigned int bins, const Iterator begin, const Iterator end)
+	: bins(bins), count(0)
 {
-	auto bounds = std::minmax_element(data.begin(), data.end());
+	auto bounds = std::minmax_element(begin, end);
 	min = *bounds.first;
 	max = *bounds.second;
 	check_constructor();
@@ -33,17 +34,17 @@ Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data)
 }
 
 template<typename T>
-Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max)
-	: bins(bins), data(data), min(min), max(max), count(0)
+Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
+	: bins(bins), min(min), max(max), count(0)
 {
 	check_constructor();
 	H.resize(bins, 0);
 }
 
 template<typename T>
-Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min, T max,
+Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max,
 		std::vector<unsigned int> H, unsigned int count)
-		: bins(bins), data(data), min(min), max(max), count(count), H(H)
+		: bins(bins), min(min), max(max), count(count), H(H)
 {
 	if (H.size() != bins)
 		throw std::invalid_argument("Argument bins has to be of same size as H vector.");
@@ -51,10 +52,11 @@ Histogram1d<T>::Histogram1d(unsigned int bins, const std::vector<T>& data, T min
 }
 
 template<typename T>
-void Histogram1d<T>::calculate_cpu()
+template<typename Iterator>
+void Histogram1d<T>::calculate_cpu(Iterator begin, Iterator end)
 {
-	for (std::size_t i = 0; i < data.size(); ++i)
-		transfer(data[i]);
+	for (auto i = begin; i != end; ++i)
+		transfer(*i);
 }
 
 template<typename T>
@@ -109,8 +111,6 @@ void Histogram1d<T>::check_constructor() const
 {
 	if (min >= max)
 		throw std::logic_error("min has to be smaller than max.");
-	if (data.size() == 0)
-		throw std::logic_error("data must not be an empty vector.");
 	if (bins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
 }
