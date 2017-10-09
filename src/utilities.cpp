@@ -15,8 +15,11 @@
  */
 
 #include <stdexcept>
+#include <iterator>
+#include <climits>
 
 #include "utilities.h"
+#include "Histogram2d.h"
 
 template<typename T, typename Iterator>
 std::vector<unsigned int> calculate_indices_1d(
@@ -29,7 +32,7 @@ std::vector<unsigned int> calculate_indices_1d(
 	if (bins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
 	size_t size = std::distance(begin, end);
-	std::vector<unsigned int> result;
+	std::vector<unsigned int> result(size);
 	// Most code token from Histogram1d class.
 	for (size_t i = 0; i < size; ++i)
 	{
@@ -38,11 +41,15 @@ std::vector<unsigned int> calculate_indices_1d(
 		{
 			T normalized = (value - min) / (max - min);
 			unsigned int index = normalized * bins;  // Implicit conversion to integer.
-			result.push_back(index);
+			result[i] = index;
 		}
 		else if (value == max)
 		{
-			result.push_back(bins - 1);
+			result[i] = bins - 1;
+		}
+		else
+		{
+			result[i] = UINT_MAX;
 		}
 	}
 	return result;
@@ -68,7 +75,7 @@ std::vector<index_pair> calculate_indices_2d(
 	size_t sizeY = std::distance(beginY, endY);
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
-	std::vector<index_pair> result;
+	std::vector<index_pair> result(sizeX);
 	// Most code token from Histogram2d class.
 	for (size_t i = 0; i < sizeX; ++i)
 	{
@@ -89,7 +96,11 @@ std::vector<index_pair> calculate_indices_2d(
 				indexY = binsY - 1;
 			else
 				indexY = (y - minY) / (maxY - minY) * binsY;
-			result.push_back(index_pair {indexX, indexY} ); // I hope this is allowed.
+			result[i] = index_pair {indexX, indexY}; // I hope this is allowed.
+		}
+		else
+		{
+			result[i] = index_pair {UINT_MAX, UINT_MAX};
 		}
 	}
 	return result;
@@ -98,9 +109,46 @@ std::vector<index_pair> calculate_indices_2d(
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information(
 		int shift_from, int shift_to,
+		unsigned int binsX, unsigned int binsY,
+		T minX, T maxX, T minY, T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY)
 {
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	if (sizeX != sizeY)
+		throw std::logic_error("Containers referenced by iterators must have the same size.");
+	if (shift_from >= shift_to)
+		throw std::logic_error("shift_from has to be smaller than shift_to.");
+	if (minX >= maxX)
+		throw std::logic_error("minX has to be smaller than maxX.");
+	if (minY >= maxY)
+		throw std::logic_error("minY has to be smaller than maxY.");
+	if (binsX < 1)
+		throw std::invalid_argument("There must be at least one binX.");
+	if (binsY < 1)
+		throw std::invalid_argument("There must be at least one binY.");
+	std::vector<unsigned int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
+	std::vector<unsigned int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
+	std::vector<T> result(shift_to - shift_from);
+	int resIdx = 0;
+	for (int i = shift_from; i < shift_to; ++i)
+	{
+		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
+		if (i < 0)
+		{
+			hist.increment_cpu(indicesX.begin(), std::prev(indicesX.end(), -i),
+					           std::next(indicesY.begin(), -i), indicesY.end());
+		}
+		else
+		{
+			hist.increment_cpu(std::next(indicesX.begin(), i), indicesX.end(),
+							   indicesY.begin(), std::prev(indicesY.end(), i));
+		}
+		result[resIdx] = *hist.calculate_mutual_information();
+		++resIdx;
+	}
+	return result;
 }
 
 // Compile for these instances.
@@ -108,3 +156,6 @@ typedef std::vector<float>::iterator fvec_iter;
 template std::vector<unsigned int> calculate_indices_1d(unsigned int, float, float, fvec_iter, fvec_iter);
 template std::vector<index_pair> calculate_indices_2d(
 		unsigned int, unsigned int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
+template std::vector<float> shifted_mutual_information(int, int, unsigned int, unsigned int,
+													   float, float, float, float,
+													   fvec_iter, fvec_iter, fvec_iter, fvec_iter);

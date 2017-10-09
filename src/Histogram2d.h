@@ -64,6 +64,10 @@ public:
 	template<typename Iterator>
 	void increment_cpu(const Iterator begin, const Iterator end);
 
+	template<typename Iterator>
+	void increment_cpu(const Iterator beginX, const Iterator endX,
+					   const Iterator beginY, const Iterator endY);
+
 	/*
 	 * Get bin count of x-axis as specified in constructor.
 	 */

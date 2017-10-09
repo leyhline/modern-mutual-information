@@ -54,9 +54,30 @@ void Histogram2d<T>::increment_cpu(const Iterator begin, const Iterator end)
 {
 	for (auto index = begin; index != end; ++index)
 	{
-		++H[index->first][index->second];
+		if (   index->first  < binsX
+			&& index->second < binsY)
+		{
+			++H[index->first][index->second];
+			++count;
+		}
 	}
-	count += std::distance(begin, end);
+}
+
+template<typename T>
+template<typename Iterator>
+void Histogram2d<T>::increment_cpu(const Iterator beginX, const Iterator endX,
+								   const Iterator beginY, const Iterator endY)
+{
+	if (std::distance(beginX, endX) != std::distance(beginY, endY))
+		throw std::logic_error("Containers referenced by iterators must have the same size.");
+	for (auto iX = beginX, iY = beginY; iX != endX; ++iX, ++iY)
+	{
+		if (*iX < binsX && *iY < binsY)
+		{
+			++H[*iX][*iY];
+			++count;
+		}
+	}
 }
 
 template<typename T>
@@ -193,5 +214,7 @@ const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
 template class Histogram2d<float>;
 typedef std::vector<float>::iterator fvec_iter;
 template void Histogram2d<float>::calculate_cpu(fvec_iter, fvec_iter, fvec_iter, fvec_iter);
-typedef std::vector<index_pair>::iterator sizevec_iter;
-template void Histogram2d<float>::increment_cpu(sizevec_iter, sizevec_iter);
+typedef std::vector<index_pair>::iterator pairvec_iter;
+template void Histogram2d<float>::increment_cpu(pairvec_iter, pairvec_iter);
+typedef std::vector<unsigned int>::iterator sizevec_iter;
+template void Histogram2d<float>::increment_cpu(sizevec_iter, sizevec_iter, sizevec_iter, sizevec_iter);

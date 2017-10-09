@@ -43,6 +43,7 @@ std::vector<index_pair> calculate_indices_2d(
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information(
 		int shift_from, int shift_to,
+		unsigned int binsX, unsigned int binsY,
+		T minX, T maxX, T minY, T maxY,
 		const Iterator beginX, const Iterator endX,
-		const Iterator beginY,
-		const Iterator endY);
+		const Iterator beginY, const Iterator endY);
