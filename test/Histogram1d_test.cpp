@@ -16,7 +16,9 @@
 
 #include <catch.hpp>
 #include <vector>
+#include <algorithm>
 #include "../src/Histogram1d.h"
+#include "../src/utilities.h"
 
 
 TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histogram1d]" )
@@ -52,4 +54,10 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 
 	Histogram1d<float> hist_copy(1, -500, 500, result_1bin, 1000);
 	CHECK( hist_copy.getHistogram()[0] == 1000 );
+
+	auto indices = calculate_indices_1d(10, -500.f, 499.f, input.begin(), input.end());
+	Histogram1d<float> hist_with_indices(10, -500.f, 499.f);
+	hist_with_indices.increment_cpu(indices.begin(), indices.end());
+	auto result_with_indices = hist_with_indices.getHistogram();
+	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }

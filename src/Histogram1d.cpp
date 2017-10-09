@@ -47,6 +47,17 @@ void Histogram1d<T>::calculate_cpu(const Iterator begin, const Iterator end)
 }
 
 template<typename T>
+template<typename Iterator>
+void Histogram1d<T>::increment_cpu(const Iterator begin, const Iterator end)
+{
+	for (auto index = begin; index != end; ++index)
+	{
+		++H[*index];
+		++count;
+	}
+}
+
+template<typename T>
 unsigned int Histogram1d<T>::getBins() const
 {
 	return bins;
@@ -106,3 +117,5 @@ void Histogram1d<T>::check_constructor() const
 template class Histogram1d<float>;
 typedef std::vector<float>::iterator fvec_iter;
 template void Histogram1d<float>::calculate_cpu(fvec_iter, fvec_iter);
+typedef std::vector<unsigned int>::iterator sizevec_iter;
+template void Histogram1d<float>::increment_cpu(sizevec_iter, sizevec_iter);

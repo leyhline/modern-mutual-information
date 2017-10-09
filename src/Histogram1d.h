@@ -56,6 +56,16 @@ public:
 	void calculate_cpu(const Iterator begin, const Iterator end);
 
 	/**
+	 * Given an iterator (type: int) holding index positions, this methods increments
+	 * the histogram at for each position by one.
+	 * Attention: Bounds are not checked for this method.
+	 * @param begin Iterator to the beginning of the index data.
+	 * @param end: Iterator to the end of the index data.
+	 */
+	template<typename Iterator>
+	void increment_cpu(const Iterator begin, const Iterator end);
+
+	/**
 	 * Get bin count as specified in constructor.
 	 */
 	unsigned int getBins() const;
