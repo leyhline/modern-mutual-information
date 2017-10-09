@@ -59,5 +59,6 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	Histogram1d<float> hist_with_indices(10, -500.f, 499.f);
 	hist_with_indices.increment_cpu(indices.begin(), indices.end());
 	auto result_with_indices = hist_with_indices.getHistogram();
+	REQUIRE( hist_with_indices.getCount() == 1000 );
 	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }

@@ -53,8 +53,8 @@ void Histogram1d<T>::increment_cpu(const Iterator begin, const Iterator end)
 	for (auto index = begin; index != end; ++index)
 	{
 		++H[*index];
-		++count;
 	}
+	count += std::distance(begin, end);
 }
 
 template<typename T>

@@ -16,7 +16,9 @@
 
 #include <catch.hpp>
 #include <vector>
+#include <algorithm>
 #include "../src/Histogram2d.h"
+#include "../src/utilities.h"
 
 
 TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram2d]" )
@@ -71,4 +73,14 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	auto mi_lazy = hist.calculate_mutual_information();
 	CHECK ( *mi_lazy == Approx(3.3219) );
 	CHECK ( mi == mi_lazy );
+
+	auto indices = calculate_indices_2d(
+			10, 10,
+			inputX.front(), inputX.back(), inputY.front(), inputY.back(),
+			inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
+	Histogram2d<float> hist_with_indices(10, 10, inputX.front(), inputX.back(), inputY.front(), inputY.back());
+	hist_with_indices.increment_cpu(indices.begin(), indices.end());
+	auto result_with_indices = hist_with_indices.getHistogram();
+	REQUIRE( hist_with_indices.getCount() == 800 );
+	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }

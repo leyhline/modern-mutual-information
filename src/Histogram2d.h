@@ -53,6 +53,17 @@ public:
 	void calculate_cpu(const Iterator beginX, const Iterator endX,
 					   const Iterator beginY, const Iterator endY);
 
+	/**
+	 * Given an iterator of pairs of indices (specifically the index_pair struct defined
+	 * in utilities.h) this method allows for incrementing the histogram at these
+	 * indices' positions.
+	 * Attention: Bounds are not checked for this method.
+	 * @param begin Iterator to the beginning of the index data.
+	 * @param end: Iterator to the end of the index data.
+	 */
+	template<typename Iterator>
+	void increment_cpu(const Iterator begin, const Iterator end);
+
 	/*
 	 * Get bin count of x-axis as specified in constructor.
 	 */
