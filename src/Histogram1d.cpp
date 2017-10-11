@@ -91,7 +91,7 @@ T Histogram1d<T>::getMin() const
 }
 
 template<typename T>
-void Histogram1d<T>::transfer(T value)
+void Histogram1d<T>::transfer(const T value)
 {
 	if (value >= min && value < max)
 	{

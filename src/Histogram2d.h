@@ -145,10 +145,10 @@ private:
 	const unsigned int binsX;
 	const unsigned int binsY;
 	unsigned int count;
-	T minX;
-	T maxX;
-	T minY;
-	T maxY;
+	const T minX;
+	const T maxX;
+	const T minY;
+	const T maxY;
 	std::vector<std::vector<unsigned int>> H;
 	std::unique_ptr<Histogram1d<T>> hist1dX;
 	std::unique_ptr<Histogram1d<T>> hist1dY;
@@ -158,7 +158,7 @@ private:
 	 * Transfer function for actually doing the insertion into H.
 	 * Use x and y parameters to calculate index at which to increment.
 	 */
-	void transfer(T x, T y);
+	void transfer(const T x, const T y);
 
 	void check_constructor() const;
 };

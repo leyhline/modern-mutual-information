@@ -23,8 +23,8 @@
 
 template<typename T, typename Iterator>
 std::vector<unsigned int> calculate_indices_1d(
-		unsigned int bins,
-		T min, T max,
+		const unsigned int bins,
+		const T min, const T max,
 		const Iterator begin, const Iterator end)
 {
 	if (min >= max)
@@ -57,9 +57,9 @@ std::vector<unsigned int> calculate_indices_1d(
 
 template<typename T, typename Iterator>
 std::vector<index_pair> calculate_indices_2d(
-		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX,
-		T minY, T maxY,
+		const unsigned int binsX, const unsigned int binsY,
+		const T minX, const T maxX,
+		const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY)
 {
@@ -108,9 +108,10 @@ std::vector<index_pair> calculate_indices_2d(
 
 template<typename T>
 inline void check_shifted_mutual_information(
-		size_t sizeX, size_t sizeY, int shift_from, int shift_to,
-		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX, T minY, T maxY, int shift_step)
+		const size_t sizeX, const size_t sizeY,
+		const int shift_from, const int shift_to,
+		const unsigned int binsX, const unsigned int binsY,
+		const T minX, const T maxX, const T minY, const T maxY, const int shift_step)
 {
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
@@ -134,12 +135,12 @@ inline void check_shifted_mutual_information(
 
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information(
-		int shift_from, int shift_to,
-		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX, T minY, T maxY,
+		const int shift_from, const int shift_to,
+		const unsigned int binsX, const unsigned int binsY,
+		const T minX, const T maxX, const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
-		int shift_step /* 1 */)
+		const int shift_step /* 1 */)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);

@@ -93,15 +93,15 @@ public:
 private:
 	const unsigned int bins;
 	unsigned int count;
-	T min;
-	T max;
+	const T min;
+	const T max;
 	std::vector<unsigned int> H;
 
 	/**
 	 * Transfer function for actually doing the insertion into H.
 	 * @param value Increment histogram for this value.
 	 */
-	void transfer(T value);
+	void transfer(const T value);
 
 	void check_constructor() const;
 };

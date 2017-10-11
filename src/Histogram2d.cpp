@@ -129,7 +129,7 @@ T Histogram2d<T>::getMaxY() const
 }
 
 template<typename T>
-void Histogram2d<T>::transfer(T x, T y)
+void Histogram2d<T>::transfer(const T x, const T y)
 {
 	if (   x >= minX
 		&& x <= maxX
