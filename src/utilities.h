@@ -106,4 +106,4 @@ std::vector<T> shifted_mutual_information(
 		T minX, T maxX, T minY, T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
-		unsigned int shift_step = 1);
+		int shift_step = 1);

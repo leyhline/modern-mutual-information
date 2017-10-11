@@ -110,7 +110,7 @@ template<typename T>
 inline void check_shifted_mutual_information(
 		size_t sizeX, size_t sizeY, int shift_from, int shift_to,
 		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX, T minY, T maxY, unsigned int shift_step)
+		T minX, T maxX, T minY, T maxY, int shift_step)
 {
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
@@ -139,7 +139,7 @@ std::vector<T> shifted_mutual_information(
 		T minX, T maxX, T minY, T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
-		unsigned int shift_step /* 1 */)
+		int shift_step /* 1 */)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
@@ -161,7 +161,7 @@ std::vector<T> shifted_mutual_information(
 			hist.increment_cpu(std::next(indicesX.begin(), i), indicesX.end(),
 							   indicesY.begin(), std::prev(indicesY.end(), i));
 		}
-		result[i - shift_from] = *hist.calculate_mutual_information();
+		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
 	}
 	return result;
 }
@@ -173,5 +173,4 @@ template std::vector<index_pair> calculate_indices_2d(
 		unsigned int, unsigned int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
 template std::vector<float> shifted_mutual_information(int, int, unsigned int, unsigned int,
 													   float, float, float, float,
-													   fvec_iter, fvec_iter, fvec_iter, fvec_iter,
-													   unsigned int);
+													   fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);

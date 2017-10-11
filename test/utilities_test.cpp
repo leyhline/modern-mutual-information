@@ -85,4 +85,10 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 		CHECK( *begin == Approx(*rbegin) );
 		++rbegin;
 	}
+
+	auto result_s3 = shifted_mutual_information(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f,
+												data.begin(), data.end(), data.begin(), data.end(), 3);
+	REQUIRE( result_s3.size() == 67 );
+	auto maximum_s3 = std::max_element(result_s3.begin(), result_s3.end());
+	REQUIRE( std::distance(result_s3.begin(), maximum_s3) == 33 );
 }
