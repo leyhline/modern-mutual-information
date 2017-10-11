@@ -48,6 +48,10 @@ public:
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
+	 * @param beginX Iterator to the beginning of the first data container.
+	 * @param endX Iterator to the end of the first data container.
+	 * @param beginY Iterator to the beginning of the second data container.
+	 * @param endY Iterator to the end of the second data container.
 	 */
 	template<typename Iterator>
 	void calculate_cpu(const Iterator beginX, const Iterator endX,
@@ -57,13 +61,24 @@ public:
 	 * Given an iterator of pairs of indices (specifically the index_pair struct defined
 	 * in utilities.h) this method allows for incrementing the histogram at these
 	 * indices' positions.
-	 * Attention: Bounds are not checked for this method.
+	 * If one of the index positions is smaller than the corresponding bin number
+	 * no insertion takes place.
 	 * @param begin Iterator to the beginning of the index data.
 	 * @param end: Iterator to the end of the index data.
 	 */
 	template<typename Iterator>
 	void increment_cpu(const Iterator begin, const Iterator end);
 
+	/**
+	 * Given two iterators with index positions of same size the histogram will
+	 * be incremented at these positions.
+	 * If one of the index positions is smaller than the corresponding bin number
+	 * no insertion takes place.
+	 * @param beginX Iterator to the beginning of the indices corresponding to the x-axis.
+	 * @param endX Iterator to the end of the indices corresponding to the x-axis.
+	 * @param beginY Iterator to the beginning of the indices corresponding to the y-axis.
+	 * @param endY Iterator to the end of the indices corresponding to the y-axis.
+	 */
 	template<typename Iterator>
 	void increment_cpu(const Iterator beginX, const Iterator endX,
 					   const Iterator beginY, const Iterator endY);

@@ -110,7 +110,7 @@ template<typename T>
 inline void check_shifted_mutual_information(
 		size_t sizeX, size_t sizeY, int shift_from, int shift_to,
 		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX, T minY, T maxY)
+		T minX, T maxX, T minY, T maxY, unsigned int shift_step)
 {
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
@@ -128,6 +128,8 @@ inline void check_shifted_mutual_information(
 		throw std::logic_error("Maximum shift does not fit data size.");
 	if ((shift_from < 0 ? -shift_from : shift_from) >= sizeX)
 		throw std::logic_error("Minimum shift does not fit data size.");
+	if (shift_step < 1)
+		throw std::invalid_argument("shift_step must be greater or equal 1.");
 }
 
 template<typename T, typename Iterator>
@@ -136,16 +138,17 @@ std::vector<T> shifted_mutual_information(
 		unsigned int binsX, unsigned int binsY,
 		T minX, T maxX, T minY, T maxY,
 		const Iterator beginX, const Iterator endX,
-		const Iterator beginY, const Iterator endY)
+		const Iterator beginY, const Iterator endY,
+		unsigned int shift_step /* 1 */)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
 	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
-								     binsX, binsY, minX, maxX, minY, maxY);
+								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
 	std::vector<unsigned int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<unsigned int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
-	std::vector<T> result(shift_to - shift_from);
-	for (int i = shift_from; i < shift_to; ++i)
+	std::vector<T> result((shift_to - shift_from) / shift_step);
+	for (int i = shift_from; i < shift_to; i += shift_step)
 	{
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
 		if (i < 0)
@@ -170,4 +173,5 @@ template std::vector<index_pair> calculate_indices_2d(
 		unsigned int, unsigned int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
 template std::vector<float> shifted_mutual_information(int, int, unsigned int, unsigned int,
 													   float, float, float, float,
-													   fvec_iter, fvec_iter, fvec_iter, fvec_iter);
+													   fvec_iter, fvec_iter, fvec_iter, fvec_iter,
+													   unsigned int);

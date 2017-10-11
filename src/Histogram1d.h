@@ -58,7 +58,7 @@ public:
 	/**
 	 * Given an iterator (type: int) holding index positions, this methods increments
 	 * the histogram at for each position by one.
-	 * Attention: Bounds are not checked for this method.
+	 * If the index position is smaller than the bin number no insertion takes place.
 	 * @param begin Iterator to the beginning of the index data.
 	 * @param end: Iterator to the end of the index data.
 	 */
