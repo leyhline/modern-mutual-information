@@ -106,16 +106,12 @@ std::vector<index_pair> calculate_indices_2d(
 	return result;
 }
 
-template<typename T, typename Iterator>
-std::vector<T> shifted_mutual_information(
-		int shift_from, int shift_to,
+template<typename T>
+inline void check_shifted_mutual_information(
+		size_t sizeX, size_t sizeY, int shift_from, int shift_to,
 		unsigned int binsX, unsigned int binsY,
-		T minX, T maxX, T minY, T maxY,
-		const Iterator beginX, const Iterator endX,
-		const Iterator beginY, const Iterator endY)
+		T minX, T maxX, T minY, T maxY)
 {
-	size_t sizeX = std::distance(beginX, endX);
-	size_t sizeY = std::distance(beginY, endY);
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
 	if (shift_from >= shift_to)
@@ -128,10 +124,27 @@ std::vector<T> shifted_mutual_information(
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
 		throw std::invalid_argument("There must be at least one binY.");
+	if ((shift_to < 0 ? -shift_to : shift_to) >= sizeX)
+		throw std::logic_error("Maximum shift does not fit data size.");
+	if ((shift_from < 0 ? -shift_from : shift_from) >= sizeX)
+		throw std::logic_error("Minimum shift does not fit data size.");
+}
+
+template<typename T, typename Iterator>
+std::vector<T> shifted_mutual_information(
+		int shift_from, int shift_to,
+		unsigned int binsX, unsigned int binsY,
+		T minX, T maxX, T minY, T maxY,
+		const Iterator beginX, const Iterator endX,
+		const Iterator beginY, const Iterator endY)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
+								     binsX, binsY, minX, maxX, minY, maxY);
 	std::vector<unsigned int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<unsigned int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
 	std::vector<T> result(shift_to - shift_from);
-	int resIdx = 0;
 	for (int i = shift_from; i < shift_to; ++i)
 	{
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
@@ -145,8 +158,7 @@ std::vector<T> shifted_mutual_information(
 			hist.increment_cpu(std::next(indicesX.begin(), i), indicesX.end(),
 							   indicesY.begin(), std::prev(indicesY.end(), i));
 		}
-		result[resIdx] = *hist.calculate_mutual_information();
-		++resIdx;
+		result[i - shift_from] = *hist.calculate_mutual_information();
 	}
 	return result;
 }

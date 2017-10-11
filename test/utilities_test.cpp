@@ -15,6 +15,8 @@
  */
 
 #include <catch.hpp>
+#include <cmath>
+#include <algorithm>
 #include "../src/utilities.h"
 
 TEST_CASE( "Test calculation of indices in 1 dimension.", "[calculate_indices_1d]" )
@@ -59,4 +61,28 @@ TEST_CASE( "Test calculation of indices in 2 dimensions.", "[calculate_indices_2
 	CHECK( indices[80].second == 1 );
 	CHECK( indices[799].first == 9 );
 	CHECK( indices[799].second == 9 );
+}
+
+TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_information]")
+{
+	// Fill a vector with sinoid data.
+	std::vector<float> data(1000);
+	float value = 0;
+	for (auto& d : data)
+	{
+		d = std::sin(value);
+		value += 0.01f;
+	}
+	auto result = shifted_mutual_information(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f,
+											 data.begin(), data.end(), data.begin(), data.end());
+	REQUIRE( result.size() == 201 );
+	auto maximum = std::max_element(result.begin(), result.end());
+	REQUIRE( std::distance(result.begin(), maximum) == 100 ); // Should be exactly the middle.
+	// And now check for symmetries.
+	auto rbegin = result.rbegin();
+	for (auto begin = result.begin(); begin != maximum; ++begin)
+	{
+		CHECK( *begin == Approx(*rbegin) );
+		++rbegin;
+	}
 }
