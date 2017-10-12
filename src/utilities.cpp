@@ -125,9 +125,9 @@ inline void check_shifted_mutual_information(
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
 		throw std::invalid_argument("There must be at least one binY.");
-	if ((shift_to < 0 ? -shift_to : shift_to) >= sizeX)
+	if ((size_t)(shift_to < 0 ? -shift_to : shift_to) >= sizeX)
 		throw std::logic_error("Maximum shift does not fit data size.");
-	if ((shift_from < 0 ? -shift_from : shift_from) >= sizeX)
+	if ((size_t)(shift_from < 0 ? -shift_from : shift_from) >= sizeX)
 		throw std::logic_error("Minimum shift does not fit data size.");
 	if (shift_step < 1)
 		throw std::invalid_argument("shift_step must be greater or equal 1.");
@@ -149,6 +149,7 @@ std::vector<T> shifted_mutual_information(
 	std::vector<unsigned int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<unsigned int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
 	std::vector<T> result((shift_to - shift_from) / shift_step);
+	#pragma omp parallel for
 	for (int i = shift_from; i < shift_to; i += shift_step)
 	{
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);

@@ -22,7 +22,7 @@
 
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
-	: bins(bins), min(min), max(max), count(0)
+	: bins(bins), count(0), min(min), max(max)
 {
 	check_constructor();
 	H.resize(bins, 0);
@@ -31,7 +31,7 @@ Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
 template<typename T>
 Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max,
 		std::vector<unsigned int> H, unsigned int count)
-		: bins(bins), min(min), max(max), count(count), H(H)
+		: bins(bins), count(count), min(min), max(max), H(H)
 {
 	if (H.size() != bins)
 		throw std::invalid_argument("Argument bins has to be of same size as H vector.");

@@ -28,8 +28,8 @@ template<typename T>
 Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
 							T minX, T maxX,
 							T minY, T maxY)
-		: binsX(binsX), binsY(binsY), minX(minX), maxX(maxX),
-		                              minY(minY), maxY(maxY), count(0)
+		: binsX(binsX), binsY(binsY), count(0), minX(minX), maxX(maxX),
+		                              	  	    minY(minY), maxY(maxY)
 {
 	check_constructor();
 	H.resize(binsX, std::vector<unsigned int>(binsY, 0));
