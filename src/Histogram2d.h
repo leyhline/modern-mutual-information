@@ -42,7 +42,7 @@ public:
 	 * @param minY Minimum value in second data vector.
 	 * @param maxY Maximum value in second data vector.
 	 */
-	Histogram2d(unsigned int binsX, unsigned int binsY,
+	Histogram2d(int binsX, int binsY,
 			    T minX, T maxX,
 			    T minY, T maxY);
 
@@ -86,22 +86,22 @@ public:
 	/*
 	 * Get bin count of x-axis as specified in constructor.
 	 */
-	unsigned int getBinsX() const;
+	int getBinsX() const;
 
 	/*
 	 * Get bin count of y-axis as specified in constructor.
 	 */
-	unsigned int getBinsY() const;
+	int getBinsY() const;
 
 	/**
 	 * Get total number of values inserted into histogram.
 	 */
-	unsigned int getCount() const;
+	int getCount() const;
 
 	/**
 	 * Get reference to histogram vector.
 	 */
-	const std::vector<std::vector<unsigned int>>& getHistogram() const;
+	const std::vector<std::vector<int>>& getHistogram() const;
 
 	/**
 	 * Calculate two 1-D histograms from 2-D histogram.
@@ -142,14 +142,14 @@ public:
 	const T* calculate_mutual_information(bool force=false);
 
 private:
-	const unsigned int binsX;
-	const unsigned int binsY;
-	unsigned int count;
+	const int binsX;
+	const int binsY;
+	int count;
 	const T minX;
 	const T maxX;
 	const T minY;
 	const T maxY;
-	std::vector<std::vector<unsigned int>> H;
+	std::vector<std::vector<int>> H;
 	std::unique_ptr<Histogram1d<T>> hist1dX;
 	std::unique_ptr<Histogram1d<T>> hist1dY;
 	std::unique_ptr<T> mutual_information;

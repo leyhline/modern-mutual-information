@@ -34,7 +34,7 @@ public:
 	 * @param min Minimum value in data vector.
 	 * @param max Maximum value in data vector.
 	 */
-	Histogram1d(unsigned int bins, T min, T max);
+	Histogram1d(int bins, T min, T max);
 
 	/**
 	 * Construct class from already available histogram data.
@@ -44,8 +44,8 @@ public:
 	 * @param H Histogram vector holding the bins.
 	 * @param count Total number of values in histogram.
 	 */
-	Histogram1d(unsigned int bins, T min, T max,
-			std::vector<unsigned int> H, unsigned int count);
+	Histogram1d(int bins, T min, T max,
+			std::vector<int> H, int count);
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
@@ -68,17 +68,17 @@ public:
 	/**
 	 * Get bin count as specified in constructor.
 	 */
-	unsigned int getBins() const;
+	int getBins() const;
 
 	/**
 	 * Get total number of values inserted into histogram.
 	 */
-	unsigned int getCount() const;
+	int getCount() const;
 
 	/**
 	 * Get reference to histogram vector.
 	 */
-	const std::vector<unsigned int>& getHistogram() const;
+	const std::vector<int>& getHistogram() const;
 
 	/**
 	 * Get (supposed) maximum value of the data.
@@ -91,11 +91,11 @@ public:
 	T getMin() const;
 
 private:
-	const unsigned int bins;
-	unsigned int count;
+	const int bins;
+	int count;
 	const T min;
 	const T max;
-	std::vector<unsigned int> H;
+	std::vector<int> H;
 
 	/**
 	 * Transfer function for actually doing the insertion into H.

@@ -22,8 +22,8 @@
 #include "Histogram2d.h"
 
 template<typename T, typename Iterator>
-std::vector<unsigned int> calculate_indices_1d(
-		const unsigned int bins,
+std::vector<int> calculate_indices_1d(
+		const int bins,
 		const T min, const T max,
 		const Iterator begin, const Iterator end)
 {
@@ -32,7 +32,7 @@ std::vector<unsigned int> calculate_indices_1d(
 	if (bins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
 	size_t size = std::distance(begin, end);
-	std::vector<unsigned int> result(size);
+	std::vector<int> result(size);
 	// Most code token from Histogram1d class.
 	for (size_t i = 0; i < size; ++i)
 	{
@@ -40,7 +40,7 @@ std::vector<unsigned int> calculate_indices_1d(
 		if (value >= min && value < max)
 		{
 			T normalized = (value - min) / (max - min);
-			unsigned int index = normalized * bins;  // Implicit conversion to integer.
+			int index = normalized * bins;  // Implicit conversion to integer.
 			result[i] = index;
 		}
 		else if (value == max)
@@ -49,7 +49,7 @@ std::vector<unsigned int> calculate_indices_1d(
 		}
 		else
 		{
-			result[i] = UINT_MAX;
+			result[i] = INT_MAX;
 		}
 	}
 	return result;
@@ -57,7 +57,7 @@ std::vector<unsigned int> calculate_indices_1d(
 
 template<typename T, typename Iterator>
 std::vector<index_pair> calculate_indices_2d(
-		const unsigned int binsX, const unsigned int binsY,
+		const int binsX, const int binsY,
 		const T minX, const T maxX,
 		const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
@@ -86,12 +86,12 @@ std::vector<index_pair> calculate_indices_2d(
 			&& y >= minY
 			&& y <= maxY)
 		{
-			unsigned int indexX;
+			int indexX;
 			if (x == maxX)
 				indexX = binsX - 1;
 			else
 				indexX = (x - minX) / (maxX - minX) * binsX;
-			unsigned int indexY;
+			int indexY;
 			if (y == maxY)
 				indexY = binsY - 1;
 			else
@@ -100,7 +100,7 @@ std::vector<index_pair> calculate_indices_2d(
 		}
 		else
 		{
-			result[i] = index_pair {UINT_MAX, UINT_MAX};
+			result[i] = index_pair {INT_MAX, INT_MAX};
 		}
 	}
 	return result;
@@ -110,7 +110,7 @@ template<typename T>
 inline void check_shifted_mutual_information(
 		const size_t sizeX, const size_t sizeY,
 		const int shift_from, const int shift_to,
-		const unsigned int binsX, const unsigned int binsY,
+		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY, const int shift_step)
 {
 	if (sizeX != sizeY)
@@ -136,7 +136,7 @@ inline void check_shifted_mutual_information(
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information(
 		const int shift_from, const int shift_to,
-		const unsigned int binsX, const unsigned int binsY,
+		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
@@ -146,8 +146,8 @@ std::vector<T> shifted_mutual_information(
 	size_t sizeY = std::distance(beginY, endY);
 	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
 								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
-	std::vector<unsigned int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
-	std::vector<unsigned int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
+	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
+	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
 	std::vector<T> result((shift_to - shift_from) / shift_step);
 	#pragma omp parallel for
 	for (int i = shift_from; i < shift_to; i += shift_step)
@@ -170,9 +170,9 @@ std::vector<T> shifted_mutual_information(
 
 // Compile for these instances.
 typedef std::vector<float>::iterator fvec_iter;
-template std::vector<unsigned int> calculate_indices_1d(unsigned int, float, float, fvec_iter, fvec_iter);
+template std::vector<int> calculate_indices_1d(int, float, float, fvec_iter, fvec_iter);
 template std::vector<index_pair> calculate_indices_2d(
-		unsigned int, unsigned int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
-template std::vector<float> shifted_mutual_information(int, int, unsigned int, unsigned int,
+		int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
+template std::vector<float> shifted_mutual_information(int, int, int, int,
 													   float, float, float, float,
 													   fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);

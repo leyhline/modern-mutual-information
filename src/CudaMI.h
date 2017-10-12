@@ -22,7 +22,7 @@ class CudaMI
 {
 public:
 	CudaMI(const int shift_from, const int shift_to,
-		   const unsigned int binsX, const unsigned int binsY,
+		   const int binsX, const int binsY,
 		   const float minX, const float maxX,
 		   const float minY, const float maxY,
 		   const float* const dataX,

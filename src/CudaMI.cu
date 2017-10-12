@@ -22,7 +22,7 @@
 // TODO Check return codes for errors!!!
 
 CudaMI::CudaMI(const int shift_from, const int shift_to,
-			   const unsigned int binsX, const unsigned int binsY,
+			   const int binsX, const int binsY,
 		       const float minX, const float maxX,
 			   const float minY, const float maxY,
 		       const float* const dataX,
@@ -48,8 +48,6 @@ const float* CudaMI::shifted_mutual_information()
 	if (!calculation_done)
 	{
 		// TODO Code comes here.
-		//cudaMemcpy(d_X, dataX, byte_size, cudaMemcpyHostToDevice);
-		//cudaMemcpy(d_Y, dataY, byte_size, cudaMemcpyHostToDevice);
 		calculation_done = true;
 	}
 	return h_result;

@@ -32,8 +32,8 @@
  * 	       at this position.
  */
 template<typename T, typename Iterator>
-std::vector<unsigned int> calculate_indices_1d(
-		const unsigned int bins,
+std::vector<int> calculate_indices_1d(
+		const int bins,
 		const T min, const T max,
 		const Iterator begin, const Iterator end);
 
@@ -42,8 +42,8 @@ std::vector<unsigned int> calculate_indices_1d(
  */
 struct index_pair
 {
-	unsigned int first;
-	unsigned int second;
+	int first;
+	int second;
 };
 
 /**
@@ -65,7 +65,7 @@ struct index_pair
  */
 template<typename T, typename Iterator>
 std::vector<index_pair> calculate_indices_2d(
-		const unsigned int binsX, const unsigned int binsY,
+		const int binsX, const int binsY,
 		const T minX, const T maxX,
 		const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
@@ -102,7 +102,7 @@ std::vector<index_pair> calculate_indices_2d(
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information(
 		const int shift_from, const int shift_to,
-		const unsigned int binsX, const unsigned int binsY,
+		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,

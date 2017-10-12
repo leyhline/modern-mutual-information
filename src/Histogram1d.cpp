@@ -21,7 +21,7 @@
 #include <cstddef>
 
 template<typename T>
-Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
+Histogram1d<T>::Histogram1d(int bins, T min, T max)
 	: bins(bins), count(0), min(min), max(max)
 {
 	check_constructor();
@@ -29,8 +29,8 @@ Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max)
 }
 
 template<typename T>
-Histogram1d<T>::Histogram1d(unsigned int bins, T min, T max,
-		std::vector<unsigned int> H, unsigned int count)
+Histogram1d<T>::Histogram1d(int bins, T min, T max,
+		std::vector<int> H, int count)
 		: bins(bins), count(count), min(min), max(max), H(H)
 {
 	if (H.size() != bins)
@@ -61,19 +61,19 @@ void Histogram1d<T>::increment_cpu(const Iterator begin, const Iterator end)
 }
 
 template<typename T>
-unsigned int Histogram1d<T>::getBins() const
+int Histogram1d<T>::getBins() const
 {
 	return bins;
 }
 
 template<typename T>
-unsigned int Histogram1d<T>::getCount() const
+int Histogram1d<T>::getCount() const
 {
 	return count;
 }
 
 template<typename T>
-const std::vector<unsigned int>& Histogram1d<T>::getHistogram() const
+const std::vector<int>& Histogram1d<T>::getHistogram() const
 {
 	return H;
 }
@@ -96,7 +96,7 @@ void Histogram1d<T>::transfer(const T value)
 	if (value >= min && value < max)
 	{
 		T normalized = (value - min) / (max - min);
-		unsigned int index = normalized * bins;  // Implicit conversion to integer.
+		int index = normalized * bins;  // Implicit conversion to integer.
 		++H[index];
 		++count;
 	}
@@ -120,5 +120,5 @@ void Histogram1d<T>::check_constructor() const
 template class Histogram1d<float>;
 typedef std::vector<float>::iterator fvec_iter;
 template void Histogram1d<float>::calculate_cpu(fvec_iter, fvec_iter);
-typedef std::vector<unsigned int>::iterator sizevec_iter;
+typedef std::vector<int>::iterator sizevec_iter;
 template void Histogram1d<float>::increment_cpu(sizevec_iter, sizevec_iter);

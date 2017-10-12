@@ -25,14 +25,14 @@
 #include <cmath>
 
 template<typename T>
-Histogram2d<T>::Histogram2d(unsigned int binsX, unsigned int binsY,
+Histogram2d<T>::Histogram2d(int binsX, int binsY,
 							T minX, T maxX,
 							T minY, T maxY)
 		: binsX(binsX), binsY(binsY), count(0), minX(minX), maxX(maxX),
 		                              	  	    minY(minY), maxY(maxY)
 {
 	check_constructor();
-	H.resize(binsX, std::vector<unsigned int>(binsY, 0));
+	H.resize(binsX, std::vector<int>(binsY, 0));
 }
 
 template<typename T>
@@ -81,25 +81,25 @@ void Histogram2d<T>::increment_cpu(const Iterator beginX, const Iterator endX,
 }
 
 template<typename T>
-unsigned int Histogram2d<T>::getBinsX() const
+int Histogram2d<T>::getBinsX() const
 {
 	return binsX;
 }
 
 template<typename T>
-unsigned int Histogram2d<T>::getBinsY() const
+int Histogram2d<T>::getBinsY() const
 {
 	return binsY;
 }
 
 template<typename T>
-unsigned int Histogram2d<T>::getCount() const
+int Histogram2d<T>::getCount() const
 {
 	return count;
 }
 
 template<typename T>
-const std::vector<std::vector<unsigned int> >& Histogram2d<T>::getHistogram() const
+const std::vector<std::vector<int> >& Histogram2d<T>::getHistogram() const
 {
 	return H;
 }
@@ -136,12 +136,12 @@ void Histogram2d<T>::transfer(const T x, const T y)
 		&& y >= minY
 		&& y <= maxY)
 	{
-		unsigned int indexX;
+		int indexX;
 		if (x == maxX)
 			indexX = binsX - 1;
 		else
 			indexX = (x - minX) / (maxX - minX) * binsX;
-		unsigned int indexY;
+		int indexY;
 		if (y == maxY)
 			indexY = binsY - 1;
 		else
@@ -156,11 +156,11 @@ std::pair<const Histogram1d<T>*, const Histogram1d<T>*> Histogram2d<T>::reduce1d
 {
 	if (force || !hist1dX || !hist1dY)
 	{
-		std::vector<unsigned int> vecX(binsX, 0);
-		std::vector<unsigned int> vecY(binsY, 0);
-		for (unsigned int x = 0; x < binsX; ++x)
+		std::vector<int> vecX(binsX, 0);
+		std::vector<int> vecY(binsY, 0);
+		for (int x = 0; x < binsX; ++x)
 		{
-			for (unsigned int y = 0; y < binsY; ++y)
+			for (int y = 0; y < binsY; ++y)
 			{
 				vecX[x] += H[x][y];
 				vecY[y] += H[x][y];
@@ -192,9 +192,9 @@ const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
 	{
 		T mi = 0;
 		auto h = reduce1d(force);
-		for (unsigned int x = 0; x < binsX; ++x)
+		for (int x = 0; x < binsX; ++x)
 		{
-			for (unsigned int y = 0; y < binsY; ++y)
+			for (int y = 0; y < binsY; ++y)
 			{
 				if (H[x][y] > 0)
 				{
@@ -216,5 +216,5 @@ typedef std::vector<float>::iterator fvec_iter;
 template void Histogram2d<float>::calculate_cpu(fvec_iter, fvec_iter, fvec_iter, fvec_iter);
 typedef std::vector<index_pair>::iterator pairvec_iter;
 template void Histogram2d<float>::increment_cpu(pairvec_iter, pairvec_iter);
-typedef std::vector<unsigned int>::iterator sizevec_iter;
+typedef std::vector<int>::iterator sizevec_iter;
 template void Histogram2d<float>::increment_cpu(sizevec_iter, sizevec_iter, sizevec_iter, sizevec_iter);
