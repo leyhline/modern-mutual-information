@@ -169,6 +169,7 @@ std::vector<T> shifted_mutual_information(
 }
 
 // Compile for these instances.
+template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
 typedef std::vector<float>::iterator fvec_iter;
 template std::vector<int> calculate_indices_1d(int, float, float, fvec_iter, fvec_iter);
 template std::vector<index_pair> calculate_indices_2d(

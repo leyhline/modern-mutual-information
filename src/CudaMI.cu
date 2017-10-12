@@ -34,6 +34,9 @@ CudaMI::CudaMI(const int shift_from, const int shift_to,
 	h_result = (float*)malloc((size_t)result_size * sizeof(float));
 	cudaMalloc((void**)&d_X, data_size * sizeof(int));
 	cudaMalloc((void**)&d_Y, data_size * sizeof(int));
+	// This can be done on the GPU later, too.
+	auto indicesX = calculate_indices_1d(binsX, minX, maxX, dataX, dataX + data_size);
+	auto indicesY = calculate_indices_1d(binsY, minY, maxY, dataY, dataY + data_size);
 }
 
 CudaMI::~CudaMI()
