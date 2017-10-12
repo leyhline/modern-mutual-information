@@ -17,6 +17,7 @@
 #include <iterator>
 
 #include "CudaMI.h"
+#include "utilities.h"
 
 // TODO Check return codes for errors!!!
 
@@ -26,13 +27,13 @@ CudaMI::CudaMI(const int shift_from, const int shift_to,
 			   const float minY, const float maxY,
 		       const float* const dataX,
 			   const float* const dataY, const size_t data_size)
-	: byte_size(data_size * sizeof(float)), result_size(shift_to - shift_from)
+	: data_size(data_size),
+	  result_size(shift_to - shift_from),
+	  calculation_done(false)
 {
-	h_result = (float*)malloc(result_size * sizeof(float));
-	cudaMalloc((void**)&d_X, byte_size);
-	cudaMalloc((void**)&d_Y, byte_size);
-	cudaMemcpy(d_X, dataX, byte_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_Y, dataY, byte_size, cudaMemcpyHostToDevice);
+	h_result = (float*)malloc((size_t)result_size * sizeof(float));
+	cudaMalloc((void**)&d_X, data_size * sizeof(int));
+	cudaMalloc((void**)&d_Y, data_size * sizeof(int));
 }
 
 CudaMI::~CudaMI()
@@ -44,7 +45,13 @@ CudaMI::~CudaMI()
 
 const float* CudaMI::shifted_mutual_information()
 {
-	// TODO Code comes here.
+	if (!calculation_done)
+	{
+		// TODO Code comes here.
+		//cudaMemcpy(d_X, dataX, byte_size, cudaMemcpyHostToDevice);
+		//cudaMemcpy(d_Y, dataY, byte_size, cudaMemcpyHostToDevice);
+		calculation_done = true;
+	}
 	return h_result;
 }
 

@@ -36,8 +36,9 @@ public:
 
 private:
 	static constexpr int block_size {128};
-	const size_t byte_size;
+	const size_t data_size;
 	const int result_size;
+	bool calculation_done;
 	float* h_result;
 	float* d_X;
 	float* d_Y;
