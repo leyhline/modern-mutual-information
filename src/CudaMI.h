@@ -21,12 +21,21 @@
 class CudaMI
 {
 public:
-	CudaMI(const float* const data, const size_t data_size);
+	CudaMI(const int shift_from, const int shift_to,
+		   const unsigned int binsX, const unsigned int binsY,
+		   const float minX, const float maxX,
+		   const float minY, const float maxY,
+		   const float* const dataX,
+		   const float* const dataY, const size_t data_size);
 
 	~CudaMI();
 
+	const float* shifted_mutual_information();
+
 private:
-	float* h_result;
+	static constexpr int block_size {128};
 	const size_t byte_size;
-	float* d_memory;
+	float* h_result;
+	float* d_X;
+	float* d_Y;
 };
