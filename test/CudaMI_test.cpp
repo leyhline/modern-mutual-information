@@ -14,31 +14,23 @@
  * limitations under the License.
  */
 
-#pragma once
+#include <cmath>
+#include <vector>
+#include <catch.hpp>
+#include "../src/CudaMI.h"
 
-#include <cstddef>
-
-class CudaMI
+TEST_CASE( "Shifted mutual information calculation on the GPU.", "[CudaMI]" )
 {
-public:
-	CudaMI(const int shift_from, const int shift_to,
-		   const unsigned int binsX, const unsigned int binsY,
-		   const float minX, const float maxX,
-		   const float minY, const float maxY,
-		   const float* const dataX,
-		   const float* const dataY, const size_t data_size);
-
-	~CudaMI();
-
-	const float* shifted_mutual_information();
-
-	int getSizeOfShiftedArray() const;
-
-private:
-	static constexpr int block_size {128};
-	const size_t byte_size;
-	const int result_size;
-	float* h_result;
-	float* d_X;
-	float* d_Y;
-};
+	float data[1000];
+	float value = 0;
+	for (auto& d : data)
+	{
+		d = std::sin(value);
+		value += 0.01f;
+	}
+	auto cudaMI = CudaMI(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f, data, data, 1000);
+	REQUIRE( cudaMI.getSizeOfShiftedArray() == 201 );
+	const float* mi_ptr = cudaMI.shifted_mutual_information();
+	// Copy results into a nice vector because why not?
+	std::vector<float> result(mi_ptr, mi_ptr + cudaMI.getSizeOfShiftedArray());
+}

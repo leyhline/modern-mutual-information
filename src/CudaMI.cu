@@ -26,10 +26,9 @@ CudaMI::CudaMI(const int shift_from, const int shift_to,
 			   const float minY, const float maxY,
 		       const float* const dataX,
 			   const float* const dataY, const size_t data_size)
-	: byte_size(data_size * sizeof(float))
+	: byte_size(data_size * sizeof(float)), result_size(shift_to - shift_from)
 {
-	size_t result_size = (shift_to - shift_from) * sizeof(float);
-	h_result = (float*)malloc(result_size);
+	h_result = (float*)malloc(result_size * sizeof(float));
 	cudaMalloc((void**)&d_X, byte_size);
 	cudaMalloc((void**)&d_Y, byte_size);
 	cudaMemcpy(d_X, dataX, byte_size, cudaMemcpyHostToDevice);
@@ -45,5 +44,11 @@ CudaMI::~CudaMI()
 
 const float* CudaMI::shifted_mutual_information()
 {
+	// TODO Code comes here.
 	return h_result;
+}
+
+int CudaMI::getSizeOfShiftedArray() const
+{
+	return result_size;
 }
