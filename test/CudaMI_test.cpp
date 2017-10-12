@@ -28,7 +28,7 @@ TEST_CASE( "Shifted mutual information calculation on the GPU.", "[CudaMI]" )
 		d = std::sin(value);
 		value += 0.01f;
 	}
-	auto cudaMI = CudaMI(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f, data, data, 1000);
+	auto cudaMI = CudaMI(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f, data, data, 1000);
 	REQUIRE( cudaMI.getSizeOfShiftedArray() == 201 );
 	const float* mi_ptr = cudaMI.shifted_mutual_information();
 	// Copy results into a nice vector because why not?

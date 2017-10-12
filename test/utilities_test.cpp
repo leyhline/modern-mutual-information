@@ -73,7 +73,7 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 		d = std::sin(value);
 		value += 0.01f;
 	}
-	auto result = shifted_mutual_information(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f,
+	auto result = shifted_mutual_information(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f,
 											 data.begin(), data.end(), data.begin(), data.end());
 	REQUIRE( result.size() == 201 );
 	auto maximum = std::max_element(result.begin(), result.end());
@@ -86,7 +86,7 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 		++rbegin;
 	}
 
-	auto result_s3 = shifted_mutual_information(-100, 101, 10, 10, 0.f, 1.f, 0.f, 1.f,
+	auto result_s3 = shifted_mutual_information(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f,
 												data.begin(), data.end(), data.begin(), data.end(), 3);
 	REQUIRE( result_s3.size() == 67 );
 	auto maximum_s3 = std::max_element(result_s3.begin(), result_s3.end());
