@@ -34,6 +34,7 @@ std::vector<int> calculate_indices_1d(
 	size_t size = std::distance(begin, end);
 	std::vector<int> result(size);
 	// Most code token from Histogram1d class.
+	#pragma omp parallel for
 	for (size_t i = 0; i < size; ++i)
 	{
 		auto value = begin[i];
@@ -77,6 +78,7 @@ std::vector<index_pair> calculate_indices_2d(
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
 	std::vector<index_pair> result(sizeX);
 	// Most code token from Histogram2d class.
+	#pragma omp parallel for
 	for (size_t i = 0; i < sizeX; ++i)
 	{
 		auto x = beginX[i];
