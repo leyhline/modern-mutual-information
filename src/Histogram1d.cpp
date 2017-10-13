@@ -33,9 +33,10 @@ Histogram1d<T>::Histogram1d(int bins, T min, T max,
 		std::vector<int> H, int count)
 		: bins(bins), count(count), min(min), max(max), H(H)
 {
-	if (H.size() != bins)
-		throw std::invalid_argument("Argument bins has to be of same size as H vector.");
 	check_constructor();
+	// Casting bins to size_type because it can't be negative thanks to check_constructor method.
+	if (H.size() != std::vector<int>::size_type(bins))
+		throw std::invalid_argument("Argument bins has to be of same size as H vector.");
 }
 
 template<typename T>
