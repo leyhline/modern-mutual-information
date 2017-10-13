@@ -18,15 +18,17 @@
 
 #include <cstddef>
 
+// Kernel computes exactly 10x10 Histogram.
+#define BINS 10
+
 class CudaMI
 {
 public:
 	CudaMI(const int shift_from, const int shift_to,
-		   const int binsX, const int binsY,
 		   const float minX, const float maxX,
 		   const float minY, const float maxY,
 		   const float* const dataX,
-		   const float* const dataY, const size_t data_size);
+		   const float* const dataY, const int data_size);
 
 	~CudaMI();
 
@@ -36,10 +38,20 @@ public:
 
 private:
 	static constexpr int block_size {128};
-	const size_t data_size;
+
+	const int shift_from;
+	const int shift_to;
+	const float minX;
+	const float maxX;
+	const float minY;
+	const float maxY;
+	const int data_size;
 	const int result_size;
 	bool calculation_done;
 	float* h_result;
-	float* d_X;
-	float* d_Y;
+	float* d_result;
+	int* d_X;
+	int* d_Y;
+
+	void check_constructor() const;
 };

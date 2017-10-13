@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 #include <catch.hpp>
 #include "../src/CudaMI.h"
 
@@ -28,9 +29,11 @@ TEST_CASE( "Shifted mutual information calculation on the GPU.", "[CudaMI]" )
 		d = std::sin(value);
 		value += 0.01f;
 	}
-	auto cudaMI = CudaMI(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f, data, data, 1000);
+	auto cudaMI = CudaMI(-100, 101, -1.f, 1.f, -1.f, 1.f, data, data, 1000);
 	REQUIRE( cudaMI.getSizeOfShiftedArray() == 201 );
 	const float* mi_ptr = cudaMI.shifted_mutual_information();
 	// Copy results into a nice vector because why not?
 	std::vector<float> result(mi_ptr, mi_ptr + cudaMI.getSizeOfShiftedArray());
+	auto maximum = std::max_element(result.begin(), result.end());
+	REQUIRE( std::distance(result.begin(), maximum) == 100 );
 }
