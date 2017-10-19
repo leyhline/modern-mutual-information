@@ -20,13 +20,27 @@
 #include <fstream>
 #include <vector>
 
+/**
+ * Class for simple CSV parsing.
+ * This reads a file of numbers and writes them into a vector.
+ * The default delimiter is a single space as well as newlines.
+ */
 template<typename T>
 	// requires Integral<T>
 class SimpleCSV
 {
 public:
+	/**
+	 * Constructor.
+	 * @param path Which file to parse.
+	 * @param delimiter Used as separator between numbers. (default: space)
+	 * 		  Note that also a newline is a hard coded delimiter.
+	 */
 	SimpleCSV(const std::string& path, char delimiter = ' ');
 
+	/**
+	 * Getter for resulting data parsed from file.
+	 */
 	const std::vector<T>& getData() const;
 
 private:
