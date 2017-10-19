@@ -211,10 +211,16 @@ const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
 }
 
 // Compile for these instances.
+//		For float:
 template class Histogram2d<float>;
+//		For vector iterators:
 typedef std::vector<float>::iterator fvec_iter;
 template void Histogram2d<float>::calculate_cpu(fvec_iter, fvec_iter, fvec_iter, fvec_iter);
 typedef std::vector<index_pair>::iterator pairvec_iter;
 template void Histogram2d<float>::increment_cpu(pairvec_iter, pairvec_iter);
 typedef std::vector<int>::iterator sizevec_iter;
 template void Histogram2d<float>::increment_cpu(sizevec_iter, sizevec_iter, sizevec_iter, sizevec_iter);
+//		For C-style arrays (i.e. pointers)
+template void Histogram2d<float>::calculate_cpu(const float*, const float*, const float*, const float*);
+template void Histogram2d<float>::increment_cpu(const index_pair*, const index_pair*);
+template void Histogram2d<float>::increment_cpu(const int*, const int*, const int*, const int*);

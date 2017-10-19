@@ -117,9 +117,14 @@ void Histogram1d<T>::check_constructor() const
 		throw std::invalid_argument("There must be at least one bin.");
 }
 
-// Compile for these instances.
+// Compile for these instances:
+//		For float:
 template class Histogram1d<float>;
+//			For vector iterators:
 typedef std::vector<float>::iterator fvec_iter;
 template void Histogram1d<float>::calculate_cpu(fvec_iter, fvec_iter);
 typedef std::vector<int>::iterator sizevec_iter;
 template void Histogram1d<float>::increment_cpu(sizevec_iter, sizevec_iter);
+//			For C-style arrays (i.e. pointers)
+template void Histogram1d<float>::calculate_cpu(const float*, const float*);
+template void Histogram1d<float>::increment_cpu(const int*, const int*);

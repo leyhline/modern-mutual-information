@@ -170,12 +170,18 @@ std::vector<T> shifted_mutual_information(
 	return result;
 }
 
-// Compile for these instances.
-template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
+// Compile for these instances:
+//		For float:
+// 			Take vector iterator.
 typedef std::vector<float>::iterator fvec_iter;
 template std::vector<int> calculate_indices_1d(int, float, float, fvec_iter, fvec_iter);
 template std::vector<index_pair> calculate_indices_2d(
 		int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter);
-template std::vector<float> shifted_mutual_information(int, int, int, int,
-													   float, float, float, float,
-													   fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);
+template std::vector<float> shifted_mutual_information(
+		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);
+//			Take normal C-style arrays (i.e. pointers)
+template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
+template std::vector<index_pair> calculate_indices_2d(
+		int, int, float, float, float, float, const float*, const float*, const float*, const float*);
+template std::vector<float> shifted_mutual_information(
+		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int);
