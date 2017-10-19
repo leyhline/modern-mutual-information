@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -37,3 +38,4 @@ TEST_CASE( "Shifted mutual information calculation on the GPU.", "[CudaMI]" )
 	auto maximum = std::max_element(result.begin(), result.end());
 	REQUIRE( std::distance(result.begin(), maximum) == 100 );
 }
+*/
