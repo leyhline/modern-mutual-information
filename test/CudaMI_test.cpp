@@ -18,7 +18,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
-#include <catch.hpp>
+#include "../lib/catch.hpp"
 #include "../src/CudaMI.h"
 
 TEST_CASE( "Shifted mutual information calculation on the GPU.", "[CudaMI]" )

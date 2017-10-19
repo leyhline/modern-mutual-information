@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <catch.hpp>
+#include "../lib/catch.hpp"
 #include <cmath>
 #include <algorithm>
 #include "../src/utilities.h"

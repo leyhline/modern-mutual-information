@@ -15,4 +15,5 @@
  */
 
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#define CATCH_CONFIG_COLOUR_NONE
+#include "../lib/catch.hpp"

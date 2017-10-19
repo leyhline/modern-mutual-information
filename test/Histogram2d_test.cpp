@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <catch.hpp>
+#include "../lib/catch.hpp"
 #include <vector>
 #include <algorithm>
 #include "../src/Histogram2d.h"
