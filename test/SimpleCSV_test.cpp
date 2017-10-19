@@ -19,7 +19,7 @@
 
 TEST_CASE( "Test reading of CSV files with space delimiter", "[SimpleCSV]" )
 {
-	SimpleCSV<float> csv("data/SimpleCSV_data1.csv");
+	SimpleCSV<float> csv("test/data/SimpleCSV_data1.csv");
 	auto data = csv.getData();
 	REQUIRE( data.size() == 3 );
 	CHECK( data[0] == 1 );

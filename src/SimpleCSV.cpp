@@ -40,7 +40,7 @@ void SimpleCSV<T>::parse_file(const std::string& path) {
 		{
 			// Read file per char.
 			char c = fs.get();
-			if (c == delimiter)
+			if (c == delimiter || c == '\n')
 			{
 				if (!number.empty())
 				{
@@ -56,7 +56,9 @@ void SimpleCSV<T>::parse_file(const std::string& path) {
 	}
 	else
 	{
-		throw std::runtime_error("File could not be opened.");
+		std::string what_arg("Could not open file: ");
+		what_arg.append(path);
+		throw std::runtime_error(what_arg);
 	}
 	fs.close();
 }
