@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../lib/catch.hpp"
+#include <catch.hpp>
 #include "../src/SimpleCSV.h"
 
 TEST_CASE( "Test reading of CSV files with space delimiter", "[SimpleCSV]" )

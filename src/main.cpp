@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <tclap/CmdLine.h>
 #include "SimpleCSV.h"
 #include "utilities.h"
 
