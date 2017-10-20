@@ -26,7 +26,7 @@ SimpleCSV<T>::SimpleCSV(const std::string& path, char delimiter /* ' ' */)
 }
 
 template<typename T>
-const std::vector<T>& SimpleCSV<T>::getData() const {
+std::vector<T>& SimpleCSV<T>::getData() {
 	return data;
 }
 

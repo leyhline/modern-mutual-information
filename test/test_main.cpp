@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_COLOUR_NONE
 #include "../lib/catch.hpp"

@@ -41,7 +41,7 @@ public:
 	/**
 	 * Getter for resulting data parsed from file.
 	 */
-	const std::vector<T>& getData() const;
+	std::vector<T>& getData();
 
 private:
 	const char delimiter;
