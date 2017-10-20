@@ -24,6 +24,8 @@
 class CudaMI
 {
 public:
+	static constexpr int block_size {64};
+
 	CudaMI(const int shift_from, const int shift_to,
 		   const float minX, const float maxX,
 		   const float minY, const float maxY,
@@ -37,8 +39,6 @@ public:
 	int getSizeOfShiftedArray() const;
 
 private:
-	static constexpr int block_size {128};
-
 	const int shift_from;
 	const int shift_to;
 	const float minX;
