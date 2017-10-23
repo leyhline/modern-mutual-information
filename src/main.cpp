@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
+// Define some default values.
+constexpr int default_shift_from {-500};
+constexpr int default_shift_to   { 500};
+constexpr int default_bins_x     {  10};
+constexpr int default_bins_y     {  10};
+
 #include <cstdlib>
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <tclap/CmdLine.h>
 #include "SimpleCSV.h"
 #include "utilities.h"
@@ -29,6 +37,59 @@ inline bool file_exists(const char* filename)
 
 int main(int argc, char* argv[])
 {
+	try
+	{
+		// Defining and parsing command line arguments with TCLAP (great library).
+		TCLAP::CmdLine cmd("Calculates mutual information by shifting over two data vectors.", ' ', "0.9");
+		TCLAP::UnlabeledValueArg<std::string> path1("path1", "first data vector", true, "", "path");
+		cmd.add(path1);
+		TCLAP::UnlabeledValueArg<std::string> path2("path2", "second data vector", true, "", "path");
+		cmd.add(path2);
+		TCLAP::ValueArg<int> shift_from("f", "shift_from",
+				"minimum shift of second data vector against first one (can be negative)", false, default_shift_from, "int");
+		cmd.add(shift_from);
+		TCLAP::ValueArg<int> shift_to("t", "shift_to",
+				"maximum shift of second data vector against first one (can be negative)", false, default_shift_to, "int");
+		cmd.add(shift_to);
+		TCLAP::ValueArg<int> bins_x("b", "bins_x",
+				"number of bins on x-axis of intermediate histogram", false, default_bins_x, "int");
+		cmd.add(bins_x);
+		TCLAP::ValueArg<int> bins_y("c", "bins_y",
+				"number of bins on y-axis of intermediate histogram", false, default_bins_y, "int");
+		cmd.add(bins_y);
+		cmd.parse(argc, argv);
+		const char delimiter = ' ';
+		SimpleCSV<float> input1(path1.getValue(), delimiter);
+		SimpleCSV<float> input2(path2.getValue(), delimiter);
+		float minX = 1;
+		float maxX = 3;
+		float minY = 1;
+		float maxY = 3;
+		int shift_step = 1;
+		auto result = shifted_mutual_information(
+			shift_from.getValue(), shift_to.getValue(),
+			bins_x.getValue(), bins_y.getValue(),
+			minX, maxX, minY, maxY,
+			input1.getData().begin(), input1.getData().end(),
+			input2.getData().begin(), input2.getData().end(),
+			shift_step);
+		std::cout << result[0];
+		for (float v : result)
+		{
+			std::cout << delimiter << v;
+		}
+		std::cout << std::endl;
+	}
+	catch (TCLAP::ArgException &e)
+	{
+		std::cerr << "error: " << e.error() << " for argument " << e.argId() << std::endl;
+	}
+	catch (std::runtime_error &e)
+	{
+		std::cerr << "error: " << e.what() << std::endl;
+	}
+	return EXIT_SUCCESS;
+	/*
 	if (argc != 3)
 	{
 		std::cout << "Usage: " << argv[0]
@@ -77,6 +138,7 @@ int main(int argc, char* argv[])
 		std::cout << delimiter << v;
 	}
 	std::cout << std::endl;
+	*/
 
 	return EXIT_SUCCESS;
 }
