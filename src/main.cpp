@@ -19,8 +19,13 @@ constexpr int default_shift_from {-500};
 constexpr int default_shift_to   { 500};
 constexpr int default_bins_x     {  10};
 constexpr int default_bins_y     {  10};
+constexpr int default_shift_step {   1};
 
 #include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <algorithm>
+#include <vector>
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
@@ -35,110 +40,106 @@ inline bool file_exists(const char* filename)
 	return fs.good();
 }
 
+struct float_pair {
+	float first;
+	float second;
+};
+
+inline float_pair find_minmax_if_nan(float min, float max,
+		const std::vector<float>::iterator begin,
+		const std::vector<float>::iterator end) {
+	float_pair result_pair;
+	if (std::isnan(min) && std::isnan(max))
+	{
+		auto result = std::minmax_element(begin, end);
+		result_pair.first = *result.first;
+		result_pair.second = *result.second;
+	}
+	else if (std::isnan(min))
+	{
+		result_pair.first = *std::min_element(begin, end);
+		result_pair.second = max;
+	}
+	else if (std::isnan(max))
+	{
+		result_pair.first = min;
+		result_pair.second = *std::max_element(begin, end);
+	}
+	else {
+		result_pair.first = min;
+		result_pair.second = max;
+	}
+	return result_pair;
+}
+
 int main(int argc, char* argv[])
 {
 	try
 	{
 		// Defining and parsing command line arguments with TCLAP (great library).
+		char desc[100]; // Use this for descriptions where default value need to be appended.
 		TCLAP::CmdLine cmd("Calculates mutual information by shifting over two data vectors.", ' ', "0.9");
 		TCLAP::UnlabeledValueArg<std::string> path1("path1", "first data vector", true, "", "path");
-		cmd.add(path1);
 		TCLAP::UnlabeledValueArg<std::string> path2("path2", "second data vector", true, "", "path");
+		sprintf(desc, "minimum shift of second data vector against first one; can be negative (default: %d)", default_shift_from);
+		TCLAP::ValueArg<int> shift_from("f", "shift_from", desc, false, default_shift_from, "int");
+		sprintf(desc, "maximum shift of second data vector against first one; can be negative (default: %d)", default_shift_to);
+		TCLAP::ValueArg<int> shift_to("t", "shift_to", desc, false, default_shift_to, "int");
+		sprintf(desc, "size of steps when data vectors (default: %d)", default_shift_step);
+		TCLAP::ValueArg<int> shift_step("s", "shift_step", desc, false, default_shift_step, "int");
+		sprintf(desc, "number of bins on x-axis of intermediate histogram (default: %d)", default_bins_x);
+		TCLAP::ValueArg<int> bins_x("b", "bins_x", desc, false, default_bins_x, "int");
+		sprintf(desc, "number of bins on y-axis of intermediate histogram (default: %d)", default_bins_y);
+		TCLAP::ValueArg<int> bins_y("c", "bins_y", desc, false, default_bins_y, "int");
+		TCLAP::ValueArg<float> min1("m", "min1", "minimum value to consider in first data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> max1("n", "max1", "maximum value to consider in first data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> min2("o", "min2", "minimum value to consider in second data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> max2("p", "max2", "maximum value to consider in second data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<char> delimiter("d", "delimiter", "delimiter between values in data files (default: space)", false, ' ', "char");
+		cmd.add(path1);
 		cmd.add(path2);
-		TCLAP::ValueArg<int> shift_from("f", "shift_from",
-				"minimum shift of second data vector against first one (can be negative)", false, default_shift_from, "int");
-		cmd.add(shift_from);
-		TCLAP::ValueArg<int> shift_to("t", "shift_to",
-				"maximum shift of second data vector against first one (can be negative)", false, default_shift_to, "int");
-		cmd.add(shift_to);
-		TCLAP::ValueArg<int> bins_x("b", "bins_x",
-				"number of bins on x-axis of intermediate histogram", false, default_bins_x, "int");
-		cmd.add(bins_x);
-		TCLAP::ValueArg<int> bins_y("c", "bins_y",
-				"number of bins on y-axis of intermediate histogram", false, default_bins_y, "int");
+		cmd.add(delimiter);
+		cmd.add(max2);
+		cmd.add(min2);
+		cmd.add(max1);
+		cmd.add(min1);
 		cmd.add(bins_y);
+		cmd.add(bins_x);
+		cmd.add(shift_step);
+		cmd.add(shift_to);
+		cmd.add(shift_from);
+		// Parse command line arguments and do stuff accordingly.
 		cmd.parse(argc, argv);
-		const char delimiter = ' ';
-		SimpleCSV<float> input1(path1.getValue(), delimiter);
-		SimpleCSV<float> input2(path2.getValue(), delimiter);
-		float minX = 1;
-		float maxX = 3;
-		float minY = 1;
-		float maxY = 3;
-		int shift_step = 1;
+		SimpleCSV<float> input1(path1.getValue(), delimiter.getValue());
+		SimpleCSV<float> input2(path2.getValue(), delimiter.getValue());
+		float_pair minmax1 = find_minmax_if_nan(
+				min1.getValue(), max1.getValue(), input1.getData().begin(), input1.getData().end());
+		float_pair minmax2 = find_minmax_if_nan(
+				min2.getValue(), max2.getValue(), input2.getData().begin(), input2.getData().end());
 		auto result = shifted_mutual_information(
 			shift_from.getValue(), shift_to.getValue(),
 			bins_x.getValue(), bins_y.getValue(),
-			minX, maxX, minY, maxY,
+			minmax1.first, minmax1.second,
+			minmax2.first, minmax2.second,
 			input1.getData().begin(), input1.getData().end(),
 			input2.getData().begin(), input2.getData().end(),
-			shift_step);
+			shift_step.getValue());
 		std::cout << result[0];
 		for (float v : result)
 		{
-			std::cout << delimiter << v;
+			std::cout << delimiter.getValue() << v;
 		}
 		std::cout << std::endl;
 	}
 	catch (TCLAP::ArgException &e)
 	{
 		std::cerr << "error: " << e.error() << " for argument " << e.argId() << std::endl;
+		return EXIT_FAILURE;
 	}
-	catch (std::runtime_error &e)
+	catch (std::logic_error &e)
 	{
 		std::cerr << "error: " << e.what() << std::endl;
-	}
-	return EXIT_SUCCESS;
-	/*
-	if (argc != 3)
-	{
-		std::cout << "Usage: " << argv[0]
-				  << " FILE1 FILE2" << std::endl
-				  << "       "
-				  << "FILE1 and FILE2 are holding numeric values in CSV format, delimited by space."
-				  << std::endl;
 		return EXIT_FAILURE;
 	}
-
-	if (!file_exists(argv[1]))
-	{
-		std::cout << "Could not open file: " << argv[1] << std::endl;
-		return EXIT_FAILURE;
-	}
-	if (!file_exists(argv[2]))
-	{
-		std::cout << "Could not open file: " << argv[2] << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	const char delimiter = ' ';
-
-	SimpleCSV<float> input1(argv[1], delimiter);
-	SimpleCSV<float> input2(argv[2], delimiter);
-
-	int shift_from = -2;
-	int shift_to = 2;
-	int binsX = 10;
-	int binsY = 10;
-	float minX = 1;
-	float maxX = 3;
-	float minY = 1;
-	float maxY = 3;
-	int shift_step = 1;
-
-	auto result = shifted_mutual_information(
-			shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
-			input1.getData().begin(), input1.getData().end(),
-			input2.getData().begin(), input2.getData().end(),
-			shift_step);
-
-	std::cout << result[0];
-	for (float v : result)
-	{
-		std::cout << delimiter << v;
-	}
-	std::cout << std::endl;
-	*/
-
 	return EXIT_SUCCESS;
 }
