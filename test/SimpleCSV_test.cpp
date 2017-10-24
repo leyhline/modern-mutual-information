@@ -19,12 +19,21 @@
 
 TEST_CASE( "Test reading of CSV files with space delimiter", "[SimpleCSV]" )
 {
-	SimpleCSV<float> csv("test/data/SimpleCSV_data1.csv");
-	auto data = csv.getData();
-	REQUIRE( data.size() == 3 );
-	CHECK( data[0] == 1 );
-	CHECK( data[1] == 2 );
-	CHECK( data[2] == 3 );
+	SimpleCSV<float> csv1("test/data/SimpleCSV_data1.csv");
+	auto data1 = csv1.getData();
+	REQUIRE( data1.size() == 3 );
+	CHECK( data1[0] == 1 );
+	CHECK( data1[1] == 2 );
+	CHECK( data1[2] == 3 );
+
+	SimpleCSV<float> csv2("test/data/SimpleCSV_random1.csv");
+	auto random1 = csv2.getData();
+	REQUIRE( random1.size() == 10000 );
+	CHECK(random1[0] == Approx(0.32243f) );
+
+	SimpleCSV<float> csv3("test/data/SimpleCSV_random2.csv");
+	auto random2 = csv3.getData();
+	REQUIRE( random2.size() == 10000 );
 }
 
 

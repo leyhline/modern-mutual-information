@@ -72,6 +72,7 @@ inline float_pair find_minmax_if_nan(float min, float max,
 	return result_pair;
 }
 
+/*
 int main(int argc, char* argv[])
 {
 	try
@@ -143,3 +144,4 @@ int main(int argc, char* argv[])
 	}
 	return EXIT_SUCCESS;
 }
+*/
