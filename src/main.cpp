@@ -72,7 +72,7 @@ inline float_pair find_minmax_if_nan(float min, float max,
 	return result_pair;
 }
 
-/*
+
 int main(int argc, char* argv[])
 {
 	try
@@ -126,9 +126,9 @@ int main(int argc, char* argv[])
 			input2.getData().begin(), input2.getData().end(),
 			shift_step.getValue());
 		std::cout << result[0];
-		for (float v : result)
+		for (std::size_t i = 1, max = result.size(); i < max; ++i)
 		{
-			std::cout << delimiter.getValue() << v;
+			std::cout << delimiter.getValue() << result[i];
 		}
 		std::cout << std::endl;
 	}
@@ -144,4 +144,4 @@ int main(int argc, char* argv[])
 	}
 	return EXIT_SUCCESS;
 }
-*/
+
