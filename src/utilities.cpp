@@ -150,9 +150,9 @@ std::vector<T> shifted_mutual_information(
 								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
 	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
-	std::vector<T> result((shift_to - shift_from) / shift_step);
+	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
 	#pragma omp parallel for
-	for (int i = shift_from; i < shift_to; i += shift_step)
+	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
 		if (i < 0)
@@ -160,10 +160,15 @@ std::vector<T> shifted_mutual_information(
 			hist.increment_cpu(indicesX.begin(), std::prev(indicesX.end(), -i),
 					           std::next(indicesY.begin(), -i), indicesY.end());
 		}
-		else
+		else if (i > 0)
 		{
 			hist.increment_cpu(std::next(indicesX.begin(), i), indicesX.end(),
 							   indicesY.begin(), std::prev(indicesY.end(), i));
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			hist.increment_cpu(indicesX.begin(), indicesX.end(),
+							   indicesY.begin(), indicesY.end());
 		}
 		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
 	}

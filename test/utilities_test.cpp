@@ -73,7 +73,7 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 		d = std::sin(value);
 		value += 0.01f;
 	}
-	auto result = shifted_mutual_information(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f,
+	auto result = shifted_mutual_information(-100, 100, 10, 10, -1.f, 1.f, -1.f, 1.f,
 											 data.begin(), data.end(), data.begin(), data.end());
 	REQUIRE( result.size() == 201 );
 	auto maximum = std::max_element(result.begin(), result.end());
@@ -86,9 +86,29 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 		++rbegin;
 	}
 
-	auto result_s3 = shifted_mutual_information(-100, 101, 10, 10, -1.f, 1.f, -1.f, 1.f,
+	auto result_s3 = shifted_mutual_information(-100, 100, 10, 10, -1.f, 1.f, -1.f, 1.f,
 												data.begin(), data.end(), data.begin(), data.end(), 3);
 	REQUIRE( result_s3.size() == 67 );
 	auto maximum_s3 = std::max_element(result_s3.begin(), result_s3.end());
 	REQUIRE( std::distance(result_s3.begin(), maximum_s3) == 33 );
+}
+
+TEST_CASE( "Exact test on small set of triangle data." "[shifted_mutual_information_triangle]")
+{
+	std::vector<float> data {0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f,
+							 9.f, 8.f, 7.f, 6.f, 5.f, 4.f, 3.f, 2.f, 1.f, 0.f};
+	auto result = shifted_mutual_information(-5, 5, 5, 5, 0.f, 10.f, 0.f, 10.f,
+						 data.begin(), data.end(), data.begin(), data.end());
+	REQUIRE( result.size() == 11 );
+	CHECK( result[0] == Approx(0.954434f) );
+	CHECK( result[1] == Approx(1.30985808f) );
+	CHECK( result[2] == Approx(0.68497745f) );
+	CHECK( result[3] == Approx(1.38138049f) );
+	CHECK( result[4] == Approx(1.0854753f) );
+	CHECK( result[5] == Approx(2.31566788f) );
+	CHECK( result[6] == Approx(1.0854753f) );
+	CHECK( result[7] == Approx(1.38138049f) );
+	CHECK( result[8] == Approx(0.68497745f) );
+	CHECK( result[9] == Approx(1.30985808f) );
+	CHECK( result[10] == Approx(0.954434f) );
 }
