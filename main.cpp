@@ -31,8 +31,8 @@ constexpr int default_shift_step {   1};
 #include <fstream>
 #include <string>
 #include <tclap/CmdLine.h>
-#include "SimpleCSV.h"
-#include "utilities.h"
+#include "src/SimpleCSV.h"
+#include "src/utilities.h"
 
 inline bool file_exists(const char* filename)
 {
