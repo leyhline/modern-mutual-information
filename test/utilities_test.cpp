@@ -16,6 +16,7 @@
 
 #include <catch.hpp>
 #include <cmath>
+#include <climits>
 #include <algorithm>
 #include "../src/utilities.h"
 
@@ -26,12 +27,14 @@ TEST_CASE( "Test calculation of indices in 1 dimension.", "[calculate_indices_1d
 	{
 		input[i] = float(i) - 500.f;
 	}
+	input[123] = NAN;
 	auto indices = calculate_indices_1d(10, -500.f, 499.f, input.begin(), input.end());
 	REQUIRE( indices.size() == 1000 );
 	CHECK( indices[0] == 0 );
 	CHECK( indices[23] == 0 );
 	CHECK( indices[99] == 0 );
 	CHECK( indices[100] == 1 );
+	CHECK( indices[123] == INT_MAX );
 	CHECK( indices[199] == 1 );
 	CHECK( indices[990] == 9 );
 	CHECK( indices[999] == 9 );

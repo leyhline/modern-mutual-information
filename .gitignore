@@ -1,7 +1,5 @@
-/Debug/
-/Release/
-/Profile/
-/builds/
+/build/
+/.vscode/
 
 
 ## C++
