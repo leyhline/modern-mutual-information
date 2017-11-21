@@ -84,3 +84,18 @@ TEST_CASE( "Test 2D Histogram with two vectors with linear values.", "[Histogram
 	REQUIRE( hist_with_indices.getCount() == 800 );
 	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }
+
+TEST_CASE( "Test 2D Histogram with single incrementation", "[Histogram2d_increment_at]" )
+{
+	Histogram2d<float> hist(10, 10, 0.f, 5.f, 0.f, 5.f);
+	hist.increment_at(9, 9);
+	hist.increment_at(0, 0);
+	hist.increment_at(0, 0);
+	hist.increment_at(1, 2);
+	hist.increment_at(10, 1);
+	REQUIRE( hist.getCount() == 4 );
+	auto result = hist.getHistogram();
+	CHECK( result[9][9] == 1 );
+	CHECK( result[0][0] == 2 );
+	CHECK( result[2][1] == 0 );
+}

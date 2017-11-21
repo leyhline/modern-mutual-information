@@ -81,6 +81,32 @@ void Histogram2d<T>::increment_cpu(const Iterator beginX, const Iterator endX,
 }
 
 template<typename T>
+void Histogram2d<T>::increment_at(int iX, int iY)
+{
+	if (iX < binsX && iY < binsY)
+	{
+		++H[iX][iY];
+		++count;
+	}
+}
+
+template<typename T>
+void Histogram2d<T>::add(const Histogram2d<T>& histogram_to_add)
+{
+	if (   histogram_to_add.getBinsX() != binsX
+	    || histogram_to_add.getBinsY() != binsY)
+		throw std::logic_error("Unable to sum histograms with different bin size.");
+	auto h2 = histogram_to_add.getHistogram();
+	for (int x = 0; x < binsX; ++x)
+	{
+		for (int y = 0; y < binsY; ++y)
+		{
+			H[x][y] += h2[x][y];
+		}
+	}
+}
+
+template<typename T>
 int Histogram2d<T>::getBinsX() const
 {
 	return binsX;

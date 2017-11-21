@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <iterator>
 #include <climits>
+#include <random>
 
 #include "utilities.h"
 #include "Histogram2d.h"
@@ -171,6 +172,88 @@ std::vector<T> shifted_mutual_information(
 							   indicesY.begin(), indicesY.end());
 		}
 		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
+	}
+	return result;
+}
+
+template<typename T, typename Iterator>
+T bootstrapped_mi(const Iterator beginX, const Iterator endX,
+				  const Iterator beginY, const Iterator endY,
+				  const int binsX, const int binsY,
+				  const T minX, const T maxX, const T minY, const T maxY,
+				  int nr_samples)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	if (sizeX != sizeY)
+		throw std::logic_error("Containers referenced by iterators must have the same size.");
+	std::random_device rdevice;
+	std::mt19937 rgen(rdevice());
+	std::uniform_int_distribution<int> uniform(0, sizeX - 1);
+	std::vector<Histogram2d<T>> hist3d(nr_samples);
+	int nr_samples_per_histogram = sizeX / nr_samples;
+	// First create some histograms from randomly sampled data pairs.
+	for (int sample = 0; sample < nr_samples; ++sample)
+	{
+		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
+		for (int i = 0; i < nr_samples_per_histogram; ++i)
+		{
+			int ridx = uniform(rgen);
+			hist.increment_at(beginX[ridx], beginY[ridx]);
+		}
+		hist3d[sample] = hist;
+	}
+	// Now sample these histograms again and add them together.
+	std::uniform_int_distribution<int> uniform_from_samples(0, nr_samples - 1);
+	Histogram2d<T> final_hist(binsX, binsY, minX, maxX, minY, maxY);
+	for (int i = 0; i < nr_samples; ++i)
+	{
+		int sampleidx = uniform_from_samples(rgen);
+		final_hist.add(hist3d[sampleidx]);
+	}
+	return *final_hist.calculate_mutual_information();
+}
+
+template<typename T, typename Iterator>
+std::vector<T> shifted_mutual_information_with_bootstrap(
+		const int shift_from, const int shift_to,
+		const int binsX, const int binsY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const Iterator beginX, const Iterator endX,
+		const Iterator beginY, const Iterator endY,
+		int nr_samples,
+		const int shift_step /* 1 */)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
+								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
+	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
+	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
+	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
+	#pragma omp parallel for
+	for (int i = shift_from; i <= shift_to; i += shift_step)
+	{
+		T mi;
+		if (i < 0)
+		{
+			mi = bootstrapped_mi<T>(indicesX.begin(), std::prev(indicesX.end(), -i),
+					                std::next(indicesY.begin(), -i), indicesY.end(),
+									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+		}
+		else if (i > 0)
+		{
+			mi = bootstrapped_mi<T>(std::next(indicesX.begin(), i), indicesX.end(),
+							        indicesY.begin(), std::prev(indicesY.end(), i),
+									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			mi = bootstrapped_mi<T>(indicesX.begin(), indicesX.end(),
+							        indicesY.begin(), indicesY.end(),
+									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+		}
+		result[(i - shift_from) / shift_step] = mi;
 	}
 	return result;
 }

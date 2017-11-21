@@ -107,3 +107,20 @@ std::vector<T> shifted_mutual_information(
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
 		const int shift_step = 1);
+
+template<typename T, typename Iterator>
+T bootstrapped_mi(const Iterator beginX, const Iterator endX,
+				  const Iterator beginY, const Iterator endY,
+				  const int binsX, const int binsY,
+				  const T minX, const T maxX, const T minY, const T maxY,
+				  int nr_samples);
+
+template<typename T, typename Iterator>
+std::vector<T> shifted_mutual_information_with_bootstrap(
+		const int shift_from, const int shift_to,
+		const int binsX, const int binsY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const Iterator beginX, const Iterator endX,
+		const Iterator beginY, const Iterator endY,
+		int nr_samples,
+		const int shift_step = 1);

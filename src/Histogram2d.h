@@ -83,12 +83,24 @@ public:
 	void increment_cpu(const Iterator beginX, const Iterator endX,
 					   const Iterator beginY, const Iterator endY);
 
-	/*
+	/**
+	 * Increment histogram at specified position by one.
+	 */
+	void increment_at(int iX, int iY);
+
+	/**
+	 * Add another histogram to this one, meaning the values at corresponding
+	 * indices are summed up. Histograms need to have same bin size.
+	 * @param histogram_to_add needs to have same bin size on both axes as original histogram.
+	 */
+	void add(const Histogram2d<T>& histogram_to_add);
+
+	/**
 	 * Get bin count of x-axis as specified in constructor.
 	 */
 	int getBinsX() const;
 
-	/*
+	/**
 	 * Get bin count of y-axis as specified in constructor.
 	 */
 	int getBinsY() const;
