@@ -82,6 +82,7 @@ int main(int argc, char* argv[])
 		TCLAP::CmdLine cmd("Calculates mutual information by shifting over two data vectors.", ' ', "0.9");
 		TCLAP::UnlabeledValueArg<std::string> path1("path1", "first data vector", true, "", "path");
 		TCLAP::UnlabeledValueArg<std::string> path2("path2", "second data vector", true, "", "path");
+		TCLAP::SwitchArg bootstrapping("b", "bootstrapping", "Use bootstrapping for histograms", false);
 		sprintf(desc, "minimum shift of second data vector against first one; can be negative (default: %d)", default_shift_from);
 		TCLAP::ValueArg<int> shift_from("f", "shift_from", desc, false, default_shift_from, "int");
 		sprintf(desc, "maximum shift of second data vector against first one; can be negative (default: %d)", default_shift_to);
@@ -89,7 +90,7 @@ int main(int argc, char* argv[])
 		sprintf(desc, "size of steps when data vectors (default: %d)", default_shift_step);
 		TCLAP::ValueArg<int> shift_step("s", "shift_step", desc, false, default_shift_step, "int");
 		sprintf(desc, "number of bins on x-axis of intermediate histogram (default: %d)", default_bins_x);
-		TCLAP::ValueArg<int> bins_x("b", "bins_x", desc, false, default_bins_x, "int");
+		TCLAP::ValueArg<int> bins_x("a", "bins_x", desc, false, default_bins_x, "int");
 		sprintf(desc, "number of bins on y-axis of intermediate histogram (default: %d)", default_bins_y);
 		TCLAP::ValueArg<int> bins_y("c", "bins_y", desc, false, default_bins_y, "int");
 		TCLAP::ValueArg<float> min1("m", "min1", "minimum value to consider in first data vector (optional)", false, NAN, "float");
@@ -109,6 +110,7 @@ int main(int argc, char* argv[])
 		cmd.add(shift_step);
 		cmd.add(shift_to);
 		cmd.add(shift_from);
+		cmd.add(bootstrapping);
 		// Parse command line arguments and do stuff accordingly.
 		cmd.parse(argc, argv);
 		SimpleCSV<float> input1(path1.getValue(), delimiter.getValue());
@@ -117,14 +119,30 @@ int main(int argc, char* argv[])
 				min1.getValue(), max1.getValue(), input1.getData().begin(), input1.getData().end());
 		float_pair minmax2 = find_minmax_if_nan(
 				min2.getValue(), max2.getValue(), input2.getData().begin(), input2.getData().end());
-		auto result = shifted_mutual_information(
-			shift_from.getValue(), shift_to.getValue(),
-			bins_x.getValue(), bins_y.getValue(),
-			minmax1.first, minmax1.second,
-			minmax2.first, minmax2.second,
-			input1.getData().begin(), input1.getData().end(),
-			input2.getData().begin(), input2.getData().end(),
-			shift_step.getValue());
+		std::vector<float> result;
+		if (bootstrapping.getValue())
+		{
+			result = shifted_mutual_information_with_bootstrap(
+				shift_from.getValue(), shift_to.getValue(),
+				bins_x.getValue(), bins_y.getValue(),
+				minmax1.first, minmax1.second,
+				minmax2.first, minmax2.second,
+				input1.getData().begin(), input1.getData().end(),
+				input2.getData().begin(), input2.getData().end(),
+				100,
+				shift_step.getValue());
+		}
+		else
+		{
+			result = shifted_mutual_information(
+				shift_from.getValue(), shift_to.getValue(),
+				bins_x.getValue(), bins_y.getValue(),
+				minmax1.first, minmax1.second,
+				minmax2.first, minmax2.second,
+				input1.getData().begin(), input1.getData().end(),
+				input2.getData().begin(), input2.getData().end(),
+				shift_step.getValue());
+		}
 		std::cout << result[0];
 		for (std::size_t i = 1, max = result.size(); i < max; ++i)
 		{
