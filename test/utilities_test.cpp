@@ -52,6 +52,7 @@ TEST_CASE( "Test calculation of indices in 2 dimensions.", "[calculate_indices_2
 	{
 		inputY[i] = float(i) - 400.f;
 	}
+	inputX[123] = NAN;
 	auto indices = calculate_indices_2d(10, 10,
 			inputX.front(), inputX.back(), inputY.front(), inputY.back(),
 			inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
@@ -62,6 +63,8 @@ TEST_CASE( "Test calculation of indices in 2 dimensions.", "[calculate_indices_2
 	CHECK( indices[79].second == 0 );
 	CHECK( indices[80].first == 1 );
 	CHECK( indices[80].second == 1 );
+	CHECK( indices[123].first == INT_MAX );
+	CHECK( indices[123].second == INT_MAX );
 	CHECK( indices[799].first == 9 );
 	CHECK( indices[799].second == 9 );
 }
