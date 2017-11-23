@@ -104,6 +104,7 @@ void Histogram2d<T>::add(const Histogram2d<T>& histogram_to_add)
 			H[x][y] += h2[x][y];
 		}
 	}
+	count += histogram_to_add.getCount();
 }
 
 template<typename T>

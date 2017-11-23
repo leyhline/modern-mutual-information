@@ -99,3 +99,25 @@ TEST_CASE( "Test 2D Histogram with single incrementation", "[Histogram2d_increme
 	CHECK( result[0][0] == 2 );
 	CHECK( result[2][1] == 0 );
 }
+
+TEST_CASE( "Add two simple histograms", "[Histogram2d_add]" )
+{
+	Histogram2d<float> hist1(3, 3, 0.f, 1.f, 0.f, 1.f);
+	Histogram2d<float> hist2(3, 3, 0.f, 1.f, 0.f, 1.f);
+	hist1.increment_at(0, 0);
+	hist1.increment_at(1, 0);
+	hist1.increment_at(2, 0);
+	hist2.increment_at(0, 0);
+	hist2.increment_at(0, 1);
+	hist2.increment_at(0, 2);
+	hist2.increment_at(1, 1);
+	REQUIRE( hist1.getCount() == 3 );
+	REQUIRE( hist2.getCount() == 4 );
+	hist1.add(hist2);
+	REQUIRE( hist1.getCount() == 7 );
+	auto h1 = hist1.getHistogram();
+	CHECK( h1[0][0] == 2 );
+	CHECK( h1[1][0] == 1 );
+	CHECK( h1[0][1] == 1 );
+	CHECK( h1[1][1] == 1 );
+}

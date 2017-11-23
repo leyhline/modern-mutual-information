@@ -190,7 +190,7 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 	std::random_device rdevice;
 	std::mt19937 rgen(rdevice());
 	std::uniform_int_distribution<int> uniform(0, sizeX - 1);
-	std::vector<Histogram2d<T>*> hist3d(nr_samples);
+	std::vector<Histogram2d<T>*> hist3d(nr_samples); // A vector of raw pointers :(
 	int nr_samples_per_histogram = sizeX / nr_samples;
 	// First create some histograms from randomly sampled data pairs.
 	for (int sample = 0; sample < nr_samples; ++sample)
@@ -212,7 +212,7 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 		final_hist.add(*hist3d[sampleidx]);
 	}
 	// Cleanup (even though using raw pointers is not really elegant)
-	for (auto sample = 0; sample < nr_samples; ++sample)
+	for (int sample = 0; sample < nr_samples; ++sample)
 	{
 		delete hist3d[sample];
 	}
