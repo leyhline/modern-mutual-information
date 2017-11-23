@@ -190,26 +190,31 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 	std::random_device rdevice;
 	std::mt19937 rgen(rdevice());
 	std::uniform_int_distribution<int> uniform(0, sizeX - 1);
-	std::vector<Histogram2d<T>> hist3d(nr_samples);
+	std::vector<Histogram2d<T>*> hist3d(nr_samples);
 	int nr_samples_per_histogram = sizeX / nr_samples;
 	// First create some histograms from randomly sampled data pairs.
 	for (int sample = 0; sample < nr_samples; ++sample)
 	{
-		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
+		Histogram2d<T>* hist_ptr = new Histogram2d<T>(binsX, binsY, minX, maxX, minY, maxY);
 		for (int i = 0; i < nr_samples_per_histogram; ++i)
 		{
 			int ridx = uniform(rgen);
-			hist.increment_at(beginX[ridx], beginY[ridx]);
+			hist_ptr->increment_at(beginX[ridx], beginY[ridx]);
 		}
-		hist3d[sample] = hist;
+		hist3d[sample] = hist_ptr;
 	}
 	// Now sample these histograms again and add them together.
 	std::uniform_int_distribution<int> uniform_from_samples(0, nr_samples - 1);
 	Histogram2d<T> final_hist(binsX, binsY, minX, maxX, minY, maxY);
-	for (int i = 0; i < nr_samples; ++i)
+	for (int sample = 0; sample < nr_samples; ++sample)
 	{
 		int sampleidx = uniform_from_samples(rgen);
-		final_hist.add(hist3d[sampleidx]);
+		final_hist.add(*hist3d[sampleidx]);
+	}
+	// Cleanup (even though using raw pointers is not really elegant)
+	for (auto sample = 0; sample < nr_samples; ++sample)
+	{
+		delete hist3d[sample];
 	}
 	return *final_hist.calculate_mutual_information();
 }
