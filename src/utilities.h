@@ -108,6 +108,13 @@ std::vector<T> shifted_mutual_information(
 		const Iterator beginY, const Iterator endY,
 		const int shift_step = 1);
 
+/**
+ * Calculates the mutual information of the two given data vectors X and Y
+ * by using bootstrapping. This is done by first generating nr_samples
+ * histograms by sampling the data and then again sampling these histograms
+ * and adding them together.
+ * Helper function for shifted_mutual_information_with_bootstrap.
+ */
 template<typename T, typename Iterator>
 T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const Iterator beginY, const Iterator endY,
@@ -115,6 +122,11 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const T minX, const T maxX, const T minY, const T maxY,
 				  int nr_samples);
 
+/**
+ * Similar to shifted_mutual_information but additionally uses bootstrapping
+ * this increasing its runtime. There is one additional parameter:
+ * @param nr_samples How many temporary histograms to generate by sampling the data.
+ */
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information_with_bootstrap(
 		const int shift_from, const int shift_to,
