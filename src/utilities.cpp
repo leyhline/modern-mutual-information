@@ -233,6 +233,8 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	size_t sizeY = std::distance(beginY, endY);
 	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
 								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
+	if (nr_samples < 1)
+		throw std::logic_error("For bootstrapping you need a minimum of one sample.");
 	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
 	std::vector<T> result((shift_to - shift_from) / shift_step + 1);

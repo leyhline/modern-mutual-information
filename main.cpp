@@ -20,6 +20,7 @@ constexpr int default_shift_to   { 500};
 constexpr int default_bins_x     {  10};
 constexpr int default_bins_y     {  10};
 constexpr int default_shift_step {   1};
+constexpr int default_bootstrap_samples { 100};
 
 #include <cstdlib>
 #include <cstdio>
@@ -83,6 +84,8 @@ int main(int argc, char* argv[])
 		TCLAP::UnlabeledValueArg<std::string> path1("path1", "first data vector", true, "", "path");
 		TCLAP::UnlabeledValueArg<std::string> path2("path2", "second data vector", true, "", "path");
 		TCLAP::SwitchArg bootstrapping("b", "bootstrapping", "Use bootstrapping for histograms", false);
+		sprintf(desc, "Number of sampled histograms for bootstrapping (default: %d)", default_bootstrap_samples);
+		TCLAP::ValueArg<int> bootstrapping_samples("B", "samples", desc, false, default_bootstrap_samples, "int");
 		sprintf(desc, "minimum shift of second data vector against first one; can be negative (default: %d)", default_shift_from);
 		TCLAP::ValueArg<int> shift_from("f", "shift_from", desc, false, default_shift_from, "int");
 		sprintf(desc, "maximum shift of second data vector against first one; can be negative (default: %d)", default_shift_to);
@@ -93,10 +96,10 @@ int main(int argc, char* argv[])
 		TCLAP::ValueArg<int> bins_x("a", "bins_x", desc, false, default_bins_x, "int");
 		sprintf(desc, "number of bins on y-axis of intermediate histogram (default: %d)", default_bins_y);
 		TCLAP::ValueArg<int> bins_y("c", "bins_y", desc, false, default_bins_y, "int");
-		TCLAP::ValueArg<float> min1("m", "min1", "minimum value to consider in first data vector (optional)", false, NAN, "float");
-		TCLAP::ValueArg<float> max1("n", "max1", "maximum value to consider in first data vector (optional)", false, NAN, "float");
-		TCLAP::ValueArg<float> min2("o", "min2", "minimum value to consider in second data vector (optional)", false, NAN, "float");
-		TCLAP::ValueArg<float> max2("p", "max2", "maximum value to consider in second data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> min1("n", "min1", "minimum value to consider in first data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> max1("m", "max1", "maximum value to consider in first data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> min2("N", "min2", "minimum value to consider in second data vector (optional)", false, NAN, "float");
+		TCLAP::ValueArg<float> max2("M", "max2", "maximum value to consider in second data vector (optional)", false, NAN, "float");
 		TCLAP::ValueArg<char> delimiter("d", "delimiter", "delimiter between values in data files (default: space)", false, ' ', "char");
 		cmd.add(path1);
 		cmd.add(path2);
@@ -110,6 +113,7 @@ int main(int argc, char* argv[])
 		cmd.add(shift_step);
 		cmd.add(shift_to);
 		cmd.add(shift_from);
+		cmd.add(bootstrapping_samples);
 		cmd.add(bootstrapping);
 		// Parse command line arguments and do stuff accordingly.
 		cmd.parse(argc, argv);
@@ -129,7 +133,7 @@ int main(int argc, char* argv[])
 				minmax2.first, minmax2.second,
 				input1.getData().begin(), input1.getData().end(),
 				input2.getData().begin(), input2.getData().end(),
-				100,
+				bootstrapping_samples.getValue(),
 				shift_step.getValue());
 		}
 		else
