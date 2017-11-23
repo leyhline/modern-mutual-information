@@ -43,8 +43,14 @@ public:
 	 */
 	std::vector<T>& getData();
 
+	/**
+	 * Write data to file.
+	 */
+	void writeData(const std::vector<T>& data_to_write);
+
 private:
 	const char delimiter;
+	const std::string path;
 	std::vector<T> data;
 
 	void parse_file(const std::string& input);

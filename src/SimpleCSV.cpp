@@ -20,14 +20,36 @@
 
 template<typename T>
 SimpleCSV<T>::SimpleCSV(const std::string& path, char delimiter /* ' ' */)
-	: delimiter(delimiter)
+	: delimiter(delimiter), path(path)
 {
-	parse_file(path);
 }
 
 template<typename T>
 std::vector<T>& SimpleCSV<T>::getData() {
+	if (data.size() == 0)
+		parse_file(path);
 	return data;
+}
+
+template<typename T>
+void SimpleCSV<T>::writeData(const std::vector<T>& data_to_write)
+{
+	std::ofstream fs(path);
+	if (fs.is_open())
+	{
+		fs << data_to_write[0];
+		for (std::size_t i = 1, max = data_to_write.size(); i < max; ++i)
+		{
+			fs << delimiter << data_to_write[i];
+		}
+	}
+	else
+	{
+		std::string what_arg("Could not open file: ");
+		what_arg.append(path);
+		throw std::runtime_error(what_arg);
+	}
+	fs.close();
 }
 
 template<typename T>

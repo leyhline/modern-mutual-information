@@ -100,10 +100,15 @@ int main(int argc, char* argv[])
 		TCLAP::ValueArg<float> max1("m", "max1", "maximum value to consider in first data vector (optional)", false, NAN, "float");
 		TCLAP::ValueArg<float> min2("N", "min2", "minimum value to consider in second data vector (optional)", false, NAN, "float");
 		TCLAP::ValueArg<float> max2("M", "max2", "maximum value to consider in second data vector (optional)", false, NAN, "float");
-		TCLAP::ValueArg<char> delimiter("d", "delimiter", "delimiter between values in data files (default: space)", false, ' ', "char");
+		TCLAP::ValueArg<char> delimiter("d", "delimiter", "delimiter between values in csv files (default: space)", false, ' ', "char");
+		TCLAP::ValueArg<std::string> outfile("o", "outfile", "Results are written to outfile (default: stdout)", false, "", "string");
+		TCLAP::ValueArg<int> input_precision("p", "in_presicion", "Precision of input file, can be 0 (CSV, default), 32 (float), 64 (double)",
+										     false, 0, "int");
 		cmd.add(path1);
 		cmd.add(path2);
 		cmd.add(delimiter);
+		cmd.add(input_precision);
+		cmd.add(outfile);
 		cmd.add(max2);
 		cmd.add(min2);
 		cmd.add(max1);
@@ -147,12 +152,21 @@ int main(int argc, char* argv[])
 				input2.getData().begin(), input2.getData().end(),
 				shift_step.getValue());
 		}
-		std::cout << result[0];
-		for (std::size_t i = 1, max = result.size(); i < max; ++i)
+		if (outfile.getValue().empty())
 		{
-			std::cout << delimiter.getValue() << result[i];
+			std::cout << result[0];
+			for (std::size_t i = 1, max = result.size(); i < max; ++i)
+			{
+				std::cout << delimiter.getValue() << result[i];
+			}
+			std::cout << std::endl;
 		}
-		std::cout << std::endl;
+		else
+		{
+			SimpleCSV<float> outputFile(outfile.getValue(), delimiter.getValue());
+			outputFile.writeData(result);
+		}
+		
 	}
 	catch (TCLAP::ArgException &e)
 	{
