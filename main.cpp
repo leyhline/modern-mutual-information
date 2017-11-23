@@ -22,6 +22,7 @@ constexpr int default_bins_y     {  10};
 constexpr int default_shift_step {   1};
 constexpr int default_bootstrap_samples { 100};
 
+#include <memory>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -33,6 +34,7 @@ constexpr int default_bootstrap_samples { 100};
 #include <string>
 #include <tclap/CmdLine.h>
 #include "src/SimpleCSV.h"
+#include "src/SimpleBinaryFile.h"
 #include "src/utilities.h"
 
 inline bool file_exists(const char* filename)
@@ -72,7 +74,6 @@ inline float_pair find_minmax_if_nan(float min, float max,
 	}
 	return result_pair;
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -122,12 +123,23 @@ int main(int argc, char* argv[])
 		cmd.add(bootstrapping);
 		// Parse command line arguments and do stuff accordingly.
 		cmd.parse(argc, argv);
-		SimpleCSV<float> input1(path1.getValue(), delimiter.getValue());
-		SimpleCSV<float> input2(path2.getValue(), delimiter.getValue());
+		std::unique_ptr<ISimpleFile<float>> input1;
+		std::unique_ptr<ISimpleFile<float>> input2;
+		int precision = input_precision.getValue();
+		if (precision == 0)
+		{
+			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path1.getValue(), delimiter.getValue()));
+			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path2.getValue(), delimiter.getValue()));
+		}
+		else
+		{
+			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path1.getValue(), precision));
+			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path2.getValue(), precision));
+		}
 		float_pair minmax1 = find_minmax_if_nan(
-				min1.getValue(), max1.getValue(), input1.getData().begin(), input1.getData().end());
+				min1.getValue(), max1.getValue(), input1->getData().begin(), input1->getData().end());
 		float_pair minmax2 = find_minmax_if_nan(
-				min2.getValue(), max2.getValue(), input2.getData().begin(), input2.getData().end());
+				min2.getValue(), max2.getValue(), input2->getData().begin(), input2->getData().end());
 		std::vector<float> result;
 		if (bootstrapping.getValue())
 		{
@@ -136,8 +148,8 @@ int main(int argc, char* argv[])
 				bins_x.getValue(), bins_y.getValue(),
 				minmax1.first, minmax1.second,
 				minmax2.first, minmax2.second,
-				input1.getData().begin(), input1.getData().end(),
-				input2.getData().begin(), input2.getData().end(),
+				input1->getData().begin(), input1->getData().end(),
+				input2->getData().begin(), input2->getData().end(),
 				bootstrapping_samples.getValue(),
 				shift_step.getValue());
 		}
@@ -148,8 +160,8 @@ int main(int argc, char* argv[])
 				bins_x.getValue(), bins_y.getValue(),
 				minmax1.first, minmax1.second,
 				minmax2.first, minmax2.second,
-				input1.getData().begin(), input1.getData().end(),
-				input2.getData().begin(), input2.getData().end(),
+				input1->getData().begin(), input1->getData().end(),
+				input2->getData().begin(), input2->getData().end(),
 				shift_step.getValue());
 		}
 		if (outfile.getValue().empty())

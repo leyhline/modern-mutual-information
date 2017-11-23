@@ -20,33 +20,34 @@
 
 template<typename T>
 SimpleCSV<T>::SimpleCSV(const std::string& path, char delimiter /* ' ' */)
-	: delimiter(delimiter), path(path)
+	: path(path), delimiter(delimiter)
 {
 }
 
 template<typename T>
-std::vector<T>& SimpleCSV<T>::getData() {
+std::vector<T>& SimpleCSV<T>::getData()
+{
 	if (data.size() == 0)
-		parse_file(path);
+		parse_file(this->path);
 	return data;
 }
 
 template<typename T>
 void SimpleCSV<T>::writeData(const std::vector<T>& data_to_write)
 {
-	std::ofstream fs(path);
+	std::ofstream fs(this->path);
 	if (fs.is_open())
 	{
 		fs << data_to_write[0];
 		for (std::size_t i = 1, max = data_to_write.size(); i < max; ++i)
 		{
-			fs << delimiter << data_to_write[i];
+			fs << this->delimiter << data_to_write[i];
 		}
 	}
 	else
 	{
 		std::string what_arg("Could not open file: ");
-		what_arg.append(path);
+		what_arg.append(this->path);
 		throw std::runtime_error(what_arg);
 	}
 	fs.close();
@@ -54,7 +55,7 @@ void SimpleCSV<T>::writeData(const std::vector<T>& data_to_write)
 
 template<typename T>
 void SimpleCSV<T>::parse_file(const std::string& path) {
-	std::ifstream fs(path);
+	std::ifstream fs(this->path);
 	if (fs.is_open())
 	{
 		std::string number;
@@ -62,7 +63,7 @@ void SimpleCSV<T>::parse_file(const std::string& path) {
 		{
 			// Read file per char.
 			char c = fs.get();
-			if (c == delimiter || c == '\n')
+			if (c == this->delimiter || c == '\n')
 			{
 				if (!number.empty())
 				{
@@ -79,7 +80,7 @@ void SimpleCSV<T>::parse_file(const std::string& path) {
 	else
 	{
 		std::string what_arg("Could not open file: ");
-		what_arg.append(path);
+		what_arg.append(this->path);
 		throw std::runtime_error(what_arg);
 	}
 	fs.close();

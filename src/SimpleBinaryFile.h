@@ -22,22 +22,19 @@
 #include "ISimpleFile.h"
 
 /**
- * Class for simple CSV parsing.
- * This reads a file of numbers and writes them into a vector.
- * The default delimiter is a single space as well as newlines.
+ * A very simple class for reading and writing from binary files.
  */
 template<typename T>
 	// requires Integral<T>
-class SimpleCSV : public ISimpleFile<T>
+class SimpleBinaryFile : public ISimpleFile<T>
 {
 public:
 	/**
 	 * Constructor.
 	 * @param path Which file to parse.
-	 * @param delimiter Used as separator between numbers. (default: space)
-	 * 		  Note that also a newline is a hard coded delimiter.
+     * @param Precision of processed file (32 or 64 allowed)
 	 */
-	SimpleCSV(const std::string& path, char delimiter = ' ');
+	SimpleBinaryFile(const std::string& path, int precision);
 
 	/**
 	 * Getter for resulting data parsed from file.
@@ -51,10 +48,9 @@ public:
 
 private:
 	const std::string path;
-    const char delimiter;
+    int precision;
 	std::vector<T> data;
 
+    template<typename Prec>
 	void parse_file(const std::string& input);
-
-	T stox(const std::string& str);
 };
