@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 		TCLAP::ValueArg<float> min2("N", "min2", "minimum value to consider in second data vector (optional)", false, NAN, "float");
 		TCLAP::ValueArg<float> max2("M", "max2", "maximum value to consider in second data vector (optional)", false, NAN, "float");
 		TCLAP::ValueArg<char> delimiter("d", "delimiter", "delimiter between values in csv files (default: space)", false, ' ', "char");
-		TCLAP::ValueArg<std::string> outfile("o", "outfile", "Results are written to outfile (default: stdout)", false, "", "string");
+		TCLAP::ValueArg<std::string> outfile("o", "outfile", "Results are written to outfile.bin or outfile.csv (default: stdout)", false, "", "string");
 		TCLAP::ValueArg<int> input_precision("p", "in_presicion", "Precision of input file, can be 0 (CSV, default), 32 (float), 64 (double)",
 										     false, 0, "int");
 		cmd.add(path1);
@@ -126,10 +126,11 @@ int main(int argc, char* argv[])
 		std::unique_ptr<ISimpleFile<float>> input1;
 		std::unique_ptr<ISimpleFile<float>> input2;
 		int precision = input_precision.getValue();
+		char delim = delimiter.getValue();
 		if (precision == 0)
 		{
-			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path1.getValue(), delimiter.getValue()));
-			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path2.getValue(), delimiter.getValue()));
+			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path1.getValue(), delim));
+			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleCSV<float>(path2.getValue(), delim));
 		}
 		else
 		{
@@ -165,21 +166,28 @@ int main(int argc, char* argv[])
 				input2->getData().begin(), input2->getData().end(),
 				shift_step.getValue());
 		}
-		if (outfile.getValue().empty())
+		std::string outfile_path = outfile.getValue();
+		if (outfile_path.empty())
 		{
 			std::cout << result[0];
 			for (std::size_t i = 1, max = result.size(); i < max; ++i)
 			{
-				std::cout << delimiter.getValue() << result[i];
+				std::cout << delim << result[i];
 			}
 			std::cout << std::endl;
 		}
 		else
 		{
-			SimpleCSV<float> outputFile(outfile.getValue(), delimiter.getValue());
-			outputFile.writeData(result);
+			if (outfile_path.size() > 4 && outfile_path.substr(outfile_path.size() - 4) == ".csv")
+			{
+				SimpleCSV<float> outputFile(outfile_path, delim);
+				outputFile.writeData(result);
+			} else
+			{
+				SimpleBinaryFile<float> outputFile(outfile_path, PREC_32);
+				outputFile.writeData(result);
+			}
 		}
-		
 	}
 	catch (TCLAP::ArgException &e)
 	{
