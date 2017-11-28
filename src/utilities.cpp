@@ -220,13 +220,26 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 }
 
 template<typename T, typename Iterator>
+inline T calc_mean(Iterator begin, Iterator end)
+{
+	T mean = 0;
+	size_t size = std::distance(begin, end);
+	T total = T(size);
+	for (size_t i = 0; i < size; ++i)
+	{
+		mean += begin[i] / total;
+	}
+	return mean;
+}
+
+template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information_with_bootstrap(
 		const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
-		int nr_samples,
+		int nr_samples, int nr_repetitions, /* 100 */
 		const int shift_step /* 1 */)
 {
 	size_t sizeX = std::distance(beginX, endX);
@@ -241,26 +254,32 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	#pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
-		T mi;
-		if (i < 0)
+		std::vector<T> mis(nr_repetitions);
+		for (int j = 0; j < nr_repetitions; ++j)
 		{
-			mi = bootstrapped_mi<T>(indicesX.begin(), std::prev(indicesX.end(), -i),
-					                std::next(indicesY.begin(), -i), indicesY.end(),
-									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+			T mi;
+			if (i < 0)
+			{
+				mi = bootstrapped_mi<T>(indicesX.begin(), std::prev(indicesX.end(), -i),
+										std::next(indicesY.begin(), -i), indicesY.end(),
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+			}
+			else if (i > 0)
+			{
+				mi = bootstrapped_mi<T>(std::next(indicesX.begin(), i), indicesX.end(),
+										indicesY.begin(), std::prev(indicesY.end(), i),
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+			}
+			else // Should not be necessary but better be explicit.
+			{
+				mi = bootstrapped_mi<T>(indicesX.begin(), indicesX.end(),
+										indicesY.begin(), indicesY.end(),
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+			}
+			mis[j] = mi;
 		}
-		else if (i > 0)
-		{
-			mi = bootstrapped_mi<T>(std::next(indicesX.begin(), i), indicesX.end(),
-							        indicesY.begin(), std::prev(indicesY.end(), i),
-									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
-		}
-		else // Should not be necessary but better be explicit.
-		{
-			mi = bootstrapped_mi<T>(indicesX.begin(), indicesX.end(),
-							        indicesY.begin(), indicesY.end(),
-									binsX, binsY, minX, maxX, minY, maxY, nr_samples);
-		}
-		result[(i - shift_from) / shift_step] = mi;
+		T mean = calc_mean<T>(mis.begin(), mis.end()); 
+		result[(i - shift_from) / shift_step] = mean;
 	}
 	return result;
 }
@@ -275,7 +294,7 @@ template std::vector<index_pair> calculate_indices_2d(
 template std::vector<float> shifted_mutual_information(
 		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
-		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int);
+		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, int);
 template float bootstrapped_mi(fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, float, float, float, float, int);
 //			Take normal C-style arrays (i.e. pointers)
 template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
@@ -284,5 +303,5 @@ template std::vector<index_pair> calculate_indices_2d(
 template std::vector<float> shifted_mutual_information(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
-		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int);
+		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int);
 template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int);
