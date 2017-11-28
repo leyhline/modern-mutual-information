@@ -20,7 +20,8 @@ constexpr int default_shift_to   { 500};
 constexpr int default_bins_x     {  10};
 constexpr int default_bins_y     {  10};
 constexpr int default_shift_step {   1};
-constexpr int default_bootstrap_samples { 100};
+constexpr int default_bootstrap_samples {100};
+constexpr int default_bootstrap_reps    {100};
 
 #include <memory>
 #include <cstdlib>
@@ -87,6 +88,8 @@ int main(int argc, char* argv[])
 		TCLAP::SwitchArg bootstrapping("b", "bootstrapping", "Use bootstrapping for histograms", false);
 		sprintf(desc, "Number of sampled histograms for bootstrapping (default: %d)", default_bootstrap_samples);
 		TCLAP::ValueArg<int> bootstrapping_samples("B", "samples", desc, false, default_bootstrap_samples, "int");
+		sprintf(desc, "Repeat bootstrapping R times for mean and std. derivation (default: %d)", default_bootstrap_reps);
+		TCLAP::ValueArg<int> bootstrapping_reps("R", "repetitions", desc, false, default_bootstrap_reps, "int");
 		sprintf(desc, "minimum shift of second data vector against first one; can be negative (default: %d)", default_shift_from);
 		TCLAP::ValueArg<int> shift_from("f", "shift_from", desc, false, default_shift_from, "int");
 		sprintf(desc, "maximum shift of second data vector against first one; can be negative (default: %d)", default_shift_to);
@@ -119,6 +122,7 @@ int main(int argc, char* argv[])
 		cmd.add(shift_step);
 		cmd.add(shift_to);
 		cmd.add(shift_from);
+		cmd.add(bootstrapping_reps);
 		cmd.add(bootstrapping_samples);
 		cmd.add(bootstrapping);
 		// Parse command line arguments and do stuff accordingly.
@@ -153,7 +157,7 @@ int main(int argc, char* argv[])
 				input1->getData().begin(), input1->getData().end(),
 				input2->getData().begin(), input2->getData().end(),
 				bootstrapping_samples.getValue(),
-				100, shift_step.getValue());
+				bootstrapping_reps.getValue(), shift_step.getValue());
 		}
 		else
 		{

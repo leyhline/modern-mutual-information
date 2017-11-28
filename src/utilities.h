@@ -134,5 +134,5 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 		const T minX, const T maxX, const T minY, const T maxY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
-		int nr_samples, int nr_repetitions = 100,
+		int nr_samples, int nr_repetitions,
 		const int shift_step = 1);
