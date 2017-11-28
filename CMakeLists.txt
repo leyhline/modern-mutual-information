@@ -28,6 +28,8 @@ file(GLOB TEST_SOURCES test/*.cpp)
 configure_file("test/SimpleCSV_data1.csv" "test/SimpleCSV_data1.csv" COPYONLY)
 configure_file("test/SimpleCSV_random1.csv" "test/SimpleCSV_random1.csv" COPYONLY)
 configure_file("test/SimpleCSV_random2.csv" "test/SimpleCSV_random2.csv" COPYONLY)
+configure_file("test/SimpleBinaryFile_data1.bin" "test/SimpleBinaryFile_data1.bin" COPYONLY)
+configure_file("test/SimpleBinaryFile_data2.bin" "test/SimpleBinaryFile_data2.bin" COPYONLY)
 
 add_executable(run_tests ${TEST_SOURCES} ${SOURCES})
 add_executable(shiftmi main.cpp ${SOURCES})

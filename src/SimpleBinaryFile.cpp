@@ -42,13 +42,11 @@ std::vector<T>& SimpleBinaryFile<T>::getData()
 template<typename T>
 void SimpleBinaryFile<T>::writeData(const std::vector<T>& data_to_write)
 {
-    std::basic_ofstream<T> fs(path);
+    std::ofstream fs(path, std::ofstream::binary);
     if (fs.is_open())
 	{
-		for (T d : data_to_write)
-		{
-			fs << d;
-		}
+		fs.write((char*)data_to_write.data(),
+				 data_to_write.size() * sizeof(T));
 	}
 	else
 	{
@@ -62,11 +60,15 @@ void SimpleBinaryFile<T>::writeData(const std::vector<T>& data_to_write)
 template<typename T>
 template<typename Prec>
 void SimpleBinaryFile<T>::parse_file(const std::string& path) {
-    std::basic_ifstream<Prec> fs(path);
+    std::ifstream fs(path, std::ifstream::binary);
     if (fs.is_open())
 	{
+		Prec out;
         while(fs.good())
-		    data.push_back(T(fs.get())); // explicit conversion.
+		{
+			if ( fs.read((char*)&out, sizeof(Prec)) )
+		    	data.push_back(out);
+		}
 	}
 	else
 	{
