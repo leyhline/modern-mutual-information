@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 				input1->getData().begin(), input1->getData().end(),
 				input2->getData().begin(), input2->getData().end(),
 				bootstrapping_samples.getValue(),
-				shift_step.getValue());
+				100, shift_step.getValue());
 		}
 		else
 		{
