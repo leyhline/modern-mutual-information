@@ -21,6 +21,12 @@
 #include <vector>
 #include "ISimpleFile.h"
 
+enum Precision
+{
+	PREC_32 = 32, // float
+	PREC_64 = 64  // double
+};
+
 /**
  * A very simple class for reading and writing from binary files.
  */
@@ -34,7 +40,7 @@ public:
 	 * @param path Which file to parse.
      * @param Precision of processed file (32 or 64 allowed)
 	 */
-	SimpleBinaryFile(const std::string& path, int precision);
+	SimpleBinaryFile(const std::string& path, Precision precision);
 
 	/**
 	 * Getter for resulting data parsed from file.
@@ -48,7 +54,7 @@ public:
 
 private:
 	const std::string path;
-    int precision;
+    Precision precision;
 	std::vector<T> data;
 
     template<typename Prec>

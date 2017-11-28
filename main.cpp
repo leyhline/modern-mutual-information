@@ -133,8 +133,9 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path1.getValue(), precision));
-			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path2.getValue(), precision));
+			Precision prec = static_cast<Precision>(precision);
+			input1 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path1.getValue(), prec));
+			input2 = std::unique_ptr<ISimpleFile<float>>(new SimpleBinaryFile<float>(path2.getValue(), prec));
 		}
 		float_pair minmax1 = find_minmax_if_nan(
 				min1.getValue(), max1.getValue(), input1->getData().begin(), input1->getData().end());

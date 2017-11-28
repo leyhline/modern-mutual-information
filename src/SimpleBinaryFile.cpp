@@ -19,13 +19,9 @@
 #include "SimpleBinaryFile.h"
 
 template<typename T>
-SimpleBinaryFile<T>::SimpleBinaryFile(const std::string& path, int precision)
-    : path(path)
+SimpleBinaryFile<T>::SimpleBinaryFile(const std::string& path, Precision precision)
+    : path(path), precision(precision)
 {
-	if (precision == 32 || precision == 64)
-		this->precision = precision;
-	else
-		throw std::invalid_argument("Precision must be 32 or 64.");
 }
 
 template<typename T>
@@ -33,12 +29,12 @@ std::vector<T>& SimpleBinaryFile<T>::getData()
 {
     if (data.size() == 0)
 	{
-		if (precision == 32)
+		if (precision == PREC_32)
 			parse_file<float>(path);
-		else if (precision == 64)
+		else if (precision == PREC_64)
 			parse_file<double>(path);
 		else
-			throw std::invalid_argument("Precision must be 32 or 64.");
+			throw std::invalid_argument("Precision must PREC_32 or PREC_64.");
 	}
 	return data;
 }
