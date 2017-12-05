@@ -31,8 +31,24 @@ configure_file("test/SimpleCSV_random2.csv" "test/SimpleCSV_random2.csv" COPYONL
 configure_file("test/SimpleBinaryFile_data1.bin" "test/SimpleBinaryFile_data1.bin" COPYONLY)
 configure_file("test/SimpleBinaryFile_data2.bin" "test/SimpleBinaryFile_data2.bin" COPYONLY)
 
+# One may use the provided Toolchain file to cross-compile for windows
+# using the x86_64-w64-mingw32 compiler.
+# For this call cmake with -DCMAKE_TOOLCHAIN_FILE=path/to/Toolchain-x86_64-w64-mingw32.cmake
+IF(CMAKE_CROSSCOMPILING)
+    SET(BUILD_SHARED_LIBRARIES OFF)
+    SET(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
+ENDIF(CMAKE_CROSSCOMPILING)
+
+# If one just wants to build a static version of the library use this
+# to compile libmodern_mutual_information.a
+add_library(modern_mutual_information STATIC EXCLUDE_FROM_ALL ${SOURCES})
+add_custom_command(TARGET modern_mutual_information POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/utilities.h" "${PROJECT_BINARY_DIR}/modern_mutual_information.h")
+
 add_executable(run_tests ${TEST_SOURCES} ${SOURCES})
 add_executable(shiftmi main.cpp ${SOURCES})
 
-# Automatically run tests after compilation.
-add_custom_command(TARGET shiftmi POST_BUILD COMMAND run_tests)
+# Automatically run tests after compilation if possible.
+IF(NOT CMAKE_CROSSCOMPILING)
+    add_custom_command(TARGET shiftmi POST_BUILD COMMAND run_tests)
+ENDIF(NOT CMAKE_CROSSCOMPILING)
