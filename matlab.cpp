@@ -16,7 +16,7 @@
 
 #include <vector>
 #include "mex.h"
-#include "build/modern_mutual_information.h"
+#include "modern_mutual_information.h"
 
 /**
  * @param nlhs Size of the output array, should be 1
@@ -48,41 +48,41 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
     if (   mxGetM(prhs[0]) != 1
         || mxGetN(prhs[0]) != 2)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "shift values need to be a 1x2 matrix.");
-    int* shift = mxGetData(prhs[0]);
+    int* shift = (int*)mxGetData(prhs[0]);
 
     if (!mxIsInt32(prhs[1]))
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "binsX and binsY need to be of type Int32");
     if (   mxGetM(prhs[1]) != 1
         || mxGetN(prhs[1]) != 2)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "bin sizes need to be a 1x2 matrix.");
-    int* bin_sizes = mxGetData(prhs[1]);
+    int* bin_sizes = (int*)mxGetData(prhs[1]);
 
     if (!mxIsSingle(prhs[3]))
         mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "min and max values need to be of type single (float).");
     if (   mxGetM(prhs[3]) != 1
         || mxGetN(prhs[3]) != 4)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "minmax_values need to be a 1x4 matrix.");
-    float* minmax = mxGetData(prhs[2]);
+    float* minmax = (float*)mxGetData(prhs[2]);
 
     if (!mxIsSingle(prhs[3]))
         mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "Input matrix must be type single (float).");
     if (mxGetM(prhs[3]) != 1)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "Input matrix must be a row vector.");
-    float* dataX = mxGetData(prhs[3]);
+    float* dataX = (float*)mxGetData(prhs[3]);
     mwSize dataX_size = mxGetN(prhs[3]);
 
     if (!mxIsSingle(prhs[4]))
         mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "Input matrix must be type single (float).");
     if (mxGetM(prhs[4]) != 1)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "Input matrix must be a row vector.");
-    float* dataY = mxGetData(prhs[4]);
+    float* dataY = (float*)mxGetData(prhs[4]);
     mwSize dataY_size = mxGetN(prhs[4]);
 
     if (!mxIsScalar(prhs[5]))
         mexErrMsgIdAndTxt("modern_mutual_information:notScalar", "shift_step needs to be a scalar value.");
     if (!mxIsInt32(prhs[5]))
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "shift_step needs to be of type Int32.");
-    int shift_step = mxGetScalar(prhs[5]); 
+    int shift_step = (int)mxGetScalar(prhs[5]); // Casting double to int should be okay according to documentation.
 
     // And now do the calculation.
     std::vector<float> result = shifted_mutual_information<float>(
@@ -94,8 +94,8 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
             shift_step);
 
     // And not let's write the result back.
-    plhs[0] = mxCreateNumericMatrix(1, result.size(), mxClassIDFromClassName("single"), mxREAL);
-    float* outMatrix = mxGetData(plhs[0]);
+    plhs[0] = mxCreateNumericMatrix(1, result.size(), mxSINGLE_CLASS, mxREAL);
+    float* outMatrix = (float*)mxGetData(plhs[0]);
     for (mwSize i = 0, end = result.size(); i < end; ++i)
     {
         outMatrix[i] = result[i];
