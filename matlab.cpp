@@ -84,20 +84,16 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "shift_step needs to be of type Int32.");
     int shift_step = (int)mxGetScalar(prhs[5]); // Casting double to int should be okay according to documentation.
 
-    // And now do the calculation.
-    std::vector<float> result = shifted_mutual_information<float>(
+    // Now do the calculation and write the result back.
+    mwSize outputSize = (shift[1] - shift[0]) / shift_step + 1;
+    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxSINGLE_CLASS, mxREAL);
+    float* outMatrix = (float*)mxGetData(plhs[0]);
+    shifted_mutual_information(
             shift[0], shift[1],
             bin_sizes[0], bin_sizes[1],
             minmax[0], minmax[1], minmax[2], minmax[3],
             dataX, dataX + dataX_size,
             dataY, dataY + dataY_size,
-            shift_step);
-
-    // And not let's write the result back.
-    plhs[0] = mxCreateNumericMatrix(1, result.size(), mxSINGLE_CLASS, mxREAL);
-    float* outMatrix = (float*)mxGetData(plhs[0]);
-    for (mwSize i = 0, end = result.size(); i < end; ++i)
-    {
-        outMatrix[i] = result[i];
-    }
+            shift_step,
+            outMatrix);
 }

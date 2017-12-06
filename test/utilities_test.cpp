@@ -97,6 +97,16 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 	REQUIRE( result_s3.size() == 67 );
 	auto maximum_s3 = std::max_element(result_s3.begin(), result_s3.end());
 	REQUIRE( std::distance(result_s3.begin(), maximum_s3) == 33 );
+
+	// And now test writing directly to array.
+	float array_result[201];
+	float* data_ptr = data.data();
+	shifted_mutual_information(-100, 100, 10, 10, -1.f, 1.f, -1.f, 1.f,
+							   data_ptr, data_ptr + 201, data_ptr, data_ptr + 201, 1, array_result);
+	for (int i = 0; i < 201; ++i)
+	{
+		CHECK( array_result[i] == result[i] );
+	}
 }
 
 TEST_CASE( "Exact test on small set of triangle data." "[shifted_mutual_information_triangle]")
