@@ -102,7 +102,7 @@ TEST_CASE( "Shifted mutual information on sinoid data." "[shifted_mutual_informa
 	float array_result[201];
 	float* data_ptr = data.data();
 	shifted_mutual_information(-100, 100, 10, 10, -1.f, 1.f, -1.f, 1.f,
-							   data_ptr, data_ptr + 201, data_ptr, data_ptr + 201, 1, array_result);
+							   data_ptr, data_ptr + 1000, data_ptr, data_ptr + 1000, 1, array_result);
 	for (int i = 0; i < 201; ++i)
 	{
 		CHECK( array_result[i] == result[i] );
