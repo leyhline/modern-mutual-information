@@ -16,7 +16,7 @@
 
 #include <vector>
 #include "mex.h"
-#include "modern_mutual_information.h"
+#include "src/utilities.h"
 
 /**
  * @param nlhs Size of the output array, should be 1

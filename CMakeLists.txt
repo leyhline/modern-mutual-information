@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 3.5)
 
 project (modern-mutual-information)
 
+# Let's use modern C++
 set (CMAKE_CXX_STANDARD 11)
 
 # Enable compiler warnings.
@@ -38,12 +39,6 @@ IF(CMAKE_CROSSCOMPILING)
     SET(BUILD_SHARED_LIBRARIES OFF)
     SET(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 ENDIF(CMAKE_CROSSCOMPILING)
-
-# If one just wants to build a static version of the library use this
-# to compile libmodern_mutual_information.a
-add_library(modern_mutual_information STATIC EXCLUDE_FROM_ALL ${SOURCES})
-add_custom_command(TARGET modern_mutual_information POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/utilities.h" "${PROJECT_BINARY_DIR}/modern_mutual_information.h")
 
 add_executable(run_tests ${TEST_SOURCES} ${SOURCES})
 add_executable(shiftmi main.cpp ${SOURCES})
