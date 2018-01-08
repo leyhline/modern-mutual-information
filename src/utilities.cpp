@@ -36,7 +36,7 @@ std::vector<int> calculate_indices_1d(
 	std::vector<int> result(size);
 	// Most code token from Histogram1d class.
 	#pragma omp parallel for
-	for (size_t i = 0; i < size; ++i)
+	for (int i = 0; i < size; ++i)
 	{
 		auto value = begin[i];
 		if (value >= min && value < max)
@@ -80,7 +80,7 @@ std::vector<index_pair> calculate_indices_2d(
 	std::vector<index_pair> result(sizeX);
 	// Most code token from Histogram2d class.
 	#pragma omp parallel for
-	for (size_t i = 0; i < sizeX; ++i)
+	for (int i = 0; i < sizeX; ++i)
 	{
 		auto x = beginX[i];
 		auto y = beginY[i];
