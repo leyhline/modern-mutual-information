@@ -19,6 +19,7 @@
 #include <vector>
 #include <iterator>
 #include <cstddef>
+#include <random>
 
 /**
  * Calculates the histogram indices of a certain data container.
@@ -120,7 +121,7 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const Iterator beginY, const Iterator endY,
 				  const int binsX, const int binsY,
 				  const T minX, const T maxX, const T minY, const T maxY,
-				  int nr_samples);
+				  int nr_samples, std::mt19937& rgen);
 
 /**
  * Similar to shifted_mutual_information but additionally uses bootstrapping

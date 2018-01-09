@@ -18,6 +18,7 @@
 #include <iterator>
 #include <climits>
 #include <random>
+#include <chrono>
 
 #include "utilities.h"
 #include "Histogram2d.h"
@@ -181,14 +182,12 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const Iterator beginY, const Iterator endY,
 				  const int binsX, const int binsY,
 				  const T minX, const T maxX, const T minY, const T maxY,
-				  int nr_samples)
+				  int nr_samples, std::mt19937& rgen)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
-	std::random_device rdevice;
-	std::mt19937 rgen(rdevice());
 	std::uniform_int_distribution<int> uniform(0, sizeX - 1);
 	std::vector<Histogram2d<T>*> hist3d(nr_samples); // A vector of raw pointers :(
 	int nr_samples_per_histogram = sizeX / nr_samples;
@@ -254,6 +253,8 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	#pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
+		auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		std::mt19937 rgen(seed);
 		std::vector<T> mis(nr_repetitions);
 		for (int j = 0; j < nr_repetitions; ++j)
 		{
@@ -262,19 +263,19 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 			{
 				mi = bootstrapped_mi<T>(indicesX.begin(), std::prev(indicesX.end(), -i),
 										std::next(indicesY.begin(), -i), indicesY.end(),
-										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			else if (i > 0)
 			{
 				mi = bootstrapped_mi<T>(std::next(indicesX.begin(), i), indicesX.end(),
 										indicesY.begin(), std::prev(indicesY.end(), i),
-										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			else // Should not be necessary but better be explicit.
 			{
 				mi = bootstrapped_mi<T>(indicesX.begin(), indicesX.end(),
 										indicesY.begin(), indicesY.end(),
-										binsX, binsY, minX, maxX, minY, maxY, nr_samples);
+										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			mis[j] = mi;
 		}
@@ -324,6 +325,7 @@ void shifted_mutual_information_with_bootstrap(
 }
 
 // Compile for these instances:
+typedef std::mt19937 RNG;
 //		For float:
 // 			Take vector iterator.
 typedef std::vector<float>::iterator fvec_iter;
@@ -334,7 +336,7 @@ template std::vector<float> shifted_mutual_information(
 		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, int);
-template float bootstrapped_mi(fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, float, float, float, float, int);
+template float bootstrapped_mi(fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, float, float, float, float, int, RNG&);
 //			Take normal C-style arrays (i.e. pointers)
 template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
 template std::vector<index_pair> calculate_indices_2d(
@@ -347,4 +349,4 @@ template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int);
 template void shifted_mutual_information_with_bootstrap(
 	int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int, float*);
-template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int);
+template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int, RNG&);
