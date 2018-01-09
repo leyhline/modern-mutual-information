@@ -32,7 +32,7 @@ std::vector<int> calculate_indices_1d(
 		throw std::logic_error("min has to be smaller than max.");
 	if (bins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
-	size_t size = std::distance(begin, end);
+	int size = std::distance(begin, end);
 	std::vector<int> result(size);
 	// Most code token from Histogram1d class.
 	#pragma omp parallel for
@@ -73,8 +73,8 @@ std::vector<index_pair> calculate_indices_2d(
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
 		throw std::invalid_argument("There must be at least one binY.");
-	size_t sizeX = std::distance(beginX, endX);
-	size_t sizeY = std::distance(beginY, endY);
+	int sizeX = std::distance(beginX, endX);
+	int sizeY = std::distance(beginY, endY);
 	if (sizeX != sizeY)
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
 	std::vector<index_pair> result(sizeX);
