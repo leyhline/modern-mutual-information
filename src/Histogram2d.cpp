@@ -251,3 +251,14 @@ template void Histogram2d<float>::increment_cpu(sizevec_iter, sizevec_iter, size
 template void Histogram2d<float>::calculate_cpu(const float*, const float*, const float*, const float*);
 template void Histogram2d<float>::increment_cpu(const index_pair*, const index_pair*);
 template void Histogram2d<float>::increment_cpu(const int*, const int*, const int*, const int*);
+//		For double:
+template class Histogram2d<double>;
+//		For vector iterators:
+typedef std::vector<double>::iterator dvec_iter;
+template void Histogram2d<double>::calculate_cpu(dvec_iter, dvec_iter, dvec_iter, dvec_iter);
+template void Histogram2d<double>::increment_cpu(pairvec_iter, pairvec_iter);
+template void Histogram2d<double>::increment_cpu(sizevec_iter, sizevec_iter, sizevec_iter, sizevec_iter);
+//		For C-style arrays (i.e. pointers)
+template void Histogram2d<double>::calculate_cpu(const double*, const double*, const double*, const double*);
+template void Histogram2d<double>::increment_cpu(const index_pair*, const index_pair*);
+template void Histogram2d<double>::increment_cpu(const int*, const int*, const int*, const int*);

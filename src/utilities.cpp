@@ -350,3 +350,27 @@ template std::vector<float> shifted_mutual_information_with_bootstrap(
 template void shifted_mutual_information_with_bootstrap(
 	int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int, float*);
 template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int, RNG&);
+//		For double:
+// 			Take vector iterator.
+typedef std::vector<double>::iterator dvec_iter;
+template std::vector<int> calculate_indices_1d(int, double, double, dvec_iter, dvec_iter);
+template std::vector<index_pair> calculate_indices_2d(
+		int, int, double, double, double, double, dvec_iter, dvec_iter, dvec_iter, dvec_iter);
+template std::vector<double> shifted_mutual_information(
+		int, int, int, int, double, double, double, double, dvec_iter, dvec_iter, dvec_iter, dvec_iter, int);
+template std::vector<double> shifted_mutual_information_with_bootstrap(
+		int, int, int, int, double, double, double, double, dvec_iter, dvec_iter, dvec_iter, dvec_iter, int, int, int);
+template double bootstrapped_mi(dvec_iter, dvec_iter, dvec_iter, dvec_iter, int, int, double, double, double, double, int, RNG&);
+//			Take normal C-style arrays (i.e. pointers)
+template std::vector<int> calculate_indices_1d(int, double, double, const double*, const double*);
+template std::vector<index_pair> calculate_indices_2d(
+		int, int, double, double, double, double, const double*, const double*, const double*, const double*);
+template std::vector<double> shifted_mutual_information(
+		int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int);
+template void shifted_mutual_information(
+		int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int, double*);
+template std::vector<double> shifted_mutual_information_with_bootstrap(
+		int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int, int, int);
+template void shifted_mutual_information_with_bootstrap(
+	int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int, int, int, double*);
+template double bootstrapped_mi(const double*, const double*, const double*, const double*, int, int, double, double, double, double, int, RNG&);

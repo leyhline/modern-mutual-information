@@ -105,3 +105,5 @@ double SimpleCSV<double>::stox(const std::string& str)
 // Compile for these instances:
 //		For float:
 template class SimpleCSV<float>;
+//		For double:
+template class SimpleCSV<double>;

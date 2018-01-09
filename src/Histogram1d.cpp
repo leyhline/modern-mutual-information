@@ -128,3 +128,12 @@ template void Histogram1d<float>::increment_cpu(sizevec_iter, sizevec_iter);
 //			For C-style arrays (i.e. pointers)
 template void Histogram1d<float>::calculate_cpu(const float*, const float*);
 template void Histogram1d<float>::increment_cpu(const int*, const int*);
+//		For double:
+template class Histogram1d<double>;
+//			For vector iterators:
+typedef std::vector<double>::iterator dvec_iter;
+template void Histogram1d<double>::calculate_cpu(dvec_iter, dvec_iter);
+template void Histogram1d<double>::increment_cpu(sizevec_iter, sizevec_iter);
+//			For C-style arrays (i.e. pointers)
+template void Histogram1d<double>::calculate_cpu(const double*, const double*);
+template void Histogram1d<double>::increment_cpu(const int*, const int*);
