@@ -151,3 +151,19 @@ void shifted_mutual_information(
 		const T* beginY, const T* endY,
 		const int shift_step,
 		T* output);
+
+/**
+ * This is for the matlab mex interface:
+ * Instead of returning a vector the result is written to a pointer location.
+ * @param output A pointer to to a vector of size (shift_to - shift_from) / shift_step + 1
+ */
+template<typename T>
+void shifted_mutual_information_with_bootstrap(
+		const int shift_from, const int shift_to,
+		const int binsX, const int binsY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const T* beginX, const T* endX,
+		const T* beginY, const T* endY,
+		int nr_samples, int nr_repetitions,
+		const int shift_step,
+		T* output);

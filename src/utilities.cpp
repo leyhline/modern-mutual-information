@@ -303,6 +303,26 @@ void shifted_mutual_information(
 	}
 }
 
+template<typename T>
+void shifted_mutual_information_with_bootstrap(
+		const int shift_from, const int shift_to,
+		const int binsX, const int binsY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const T* beginX, const T* endX,
+		const T* beginY, const T* endY,
+		int nr_samples, int nr_repetitions,
+		const int shift_step,
+		T* output)
+{
+	std::vector<T> result = shifted_mutual_information_with_bootstrap<T>(
+		shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
+		beginX, endX, beginY, endY, nr_samples, nr_repetitions, shift_step);
+	for (int i = 0, end = result.size(); i < end; ++i)
+	{
+		output[i] = result[i];
+	}
+}
+
 // Compile for these instances:
 //		For float:
 // 			Take vector iterator.
@@ -325,4 +345,6 @@ template void shifted_mutual_information(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, float*);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int);
+template void shifted_mutual_information_with_bootstrap(
+	int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int, float*);
 template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int);
