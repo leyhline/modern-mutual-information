@@ -284,16 +284,17 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	return result;
 }
 
+template<typename T>
 void shifted_mutual_information(
 	    const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
-		const float minX, const float maxX, const float minY, const float maxY,
-		const float* beginX, const float* endX,
-		const float* beginY, const float* endY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const T* beginX, const T* endX,
+		const T* beginY, const T* endY,
 		const int shift_step,
-		float* output)
+		T* output)
 {
-	std::vector<float> result = shifted_mutual_information<float>(
+	std::vector<T> result = shifted_mutual_information<T>(
 		shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
 		beginX, endX, beginY, endY, shift_step);
 	for (int i = 0, end = result.size(); i < end; ++i)
@@ -320,6 +321,8 @@ template std::vector<index_pair> calculate_indices_2d(
 		int, int, float, float, float, float, const float*, const float*, const float*, const float*);
 template std::vector<float> shifted_mutual_information(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int);
+template void shifted_mutual_information(
+		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, float*);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int);
 template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int);

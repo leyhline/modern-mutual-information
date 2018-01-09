@@ -141,13 +141,13 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
  * @param output A pointer to to a vector of size (shift_to - shift_from) / shift_step + 1
- * NOTE: This is not templated but instanced for float.
  */
+template<typename T>
 void shifted_mutual_information(
 	    const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
-		const float minX, const float maxX, const float minY, const float maxY,
-		const float* beginX, const float* endX,
-		const float* beginY, const float* endY,
+		const T minX, const T maxX, const T minY, const T maxY,
+		const T* beginX, const T* endX,
+		const T* beginY, const T* endY,
 		const int shift_step,
-		float* output);
+		T* output);
