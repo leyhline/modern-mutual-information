@@ -155,6 +155,10 @@ std::vector<T> shifted_mutual_information(
 								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
 	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
+	auto indX_begin = indicesX.begin();
+	auto indX_end = indicesX.end();
+	auto indY_begin = indicesY.begin();
+	auto indY_end = indicesY.end();
 	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
 	#pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
@@ -162,18 +166,61 @@ std::vector<T> shifted_mutual_information(
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
 		if (i < 0)
 		{
-			hist.increment_cpu(indicesX.begin(), std::prev(indicesX.end(), -i),
-					           std::next(indicesY.begin(), -i), indicesY.end());
+			hist.increment_cpu(indX_begin, std::prev(indX_end, -i),
+					           std::next(indY_begin, -i), indY_end);
 		}
 		else if (i > 0)
 		{
-			hist.increment_cpu(std::next(indicesX.begin(), i), indicesX.end(),
-							   indicesY.begin(), std::prev(indicesY.end(), i));
+			hist.increment_cpu(std::next(indX_begin, i), indX_end,
+							   indY_begin, std::prev(indY_end, i));
 		}
 		else // Should not be necessary but better be explicit.
 		{
-			hist.increment_cpu(indicesX.begin(), indicesX.end(),
-							   indicesY.begin(), indicesY.end());
+			hist.increment_cpu(indX_begin, indX_end,
+							   indY_begin, indY_end);
+		}
+		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
+	}
+	return result;
+}
+
+/// If an Iterator of type int is passed then assume these are already the indices.
+template<typename T>
+std::vector<T> shifted_mutual_information(
+	const int shift_from, const int shift_to,
+	const int binsX, const int binsY,
+	const T minX, const T maxX, const T minY, const T maxY,
+	const std::vector<int>::iterator beginX, const std::vector<int>::iterator endX,
+	const std::vector<int>::iterator beginY, const std::vector<int>::iterator endY,
+	const int shift_step /* 1 */)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
+		binsX, binsY, minX, maxX, minY, maxY, shift_step);
+	auto indX_begin = beginX;
+	auto indX_end = endX;
+	auto indY_begin = beginY;
+	auto indY_end = endY;
+	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
+#pragma omp parallel for
+	for (int i = shift_from; i <= shift_to; i += shift_step)
+	{
+		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
+		if (i < 0)
+		{
+			hist.increment_cpu(indX_begin, std::prev(indX_end, -i),
+				std::next(indY_begin, -i), indY_end);
+		}
+		else if (i > 0)
+		{
+			hist.increment_cpu(std::next(indX_begin, i), indX_end,
+				indY_begin, std::prev(indY_end, i));
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			hist.increment_cpu(indX_begin, indX_end,
+				indY_begin, indY_end);
 		}
 		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
 	}
@@ -250,8 +297,14 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 								     binsX, binsY, minX, maxX, minY, maxY, shift_step);
 	if (nr_samples < 1)
 		throw std::logic_error("For bootstrapping you need a minimum of one sample.");
+	if (nr_repetitions < 1)
+		throw std::logic_error("There needs to be at least one repetition of the bootstrapping process.");
 	std::vector<int> indicesX = calculate_indices_1d(binsX, minX, maxX, beginX, endX);
 	std::vector<int> indicesY = calculate_indices_1d(binsY, minY, maxY, beginY, endY);
+	auto indX_begin = indicesX.begin();
+	auto indX_end = indicesX.end();
+	auto indY_begin = indicesY.begin();
+	auto indY_end = indicesY.end();
 	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
 	#pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
@@ -264,20 +317,20 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 			T mi;
 			if (i < 0)
 			{
-				mi = bootstrapped_mi<T>(indicesX.begin(), std::prev(indicesX.end(), -i),
-										std::next(indicesY.begin(), -i), indicesY.end(),
+				mi = bootstrapped_mi<T>(indX_begin, std::prev(indX_end, -i),
+										std::next(indY_begin, -i), indY_end,
 										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			else if (i > 0)
 			{
-				mi = bootstrapped_mi<T>(std::next(indicesX.begin(), i), indicesX.end(),
-										indicesY.begin(), std::prev(indicesY.end(), i),
+				mi = bootstrapped_mi<T>(std::next(indX_begin, i), indX_end,
+										indY_begin, std::prev(indY_end, i),
 										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			else // Should not be necessary but better be explicit.
 			{
-				mi = bootstrapped_mi<T>(indicesX.begin(), indicesX.end(),
-										indicesY.begin(), indicesY.end(),
+				mi = bootstrapped_mi<T>(indX_begin, indX_end,
+										indY_begin, indY_end,
 										binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
 			mis[j] = mi;
