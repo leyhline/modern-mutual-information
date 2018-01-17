@@ -167,11 +167,13 @@ void Histogram2d<T>::transfer(const T x, const T y)
 		if (x == maxX)
 			indexX = binsX - 1;
 		else
+			#pragma warning(suppress: 4244)
 			indexX = (x - minX) / (maxX - minX) * binsX;
 		int indexY;
 		if (y == maxY)
 			indexY = binsY - 1;
 		else
+			#pragma warning(suppress: 4244)
 			indexY = (y - minY) / (maxY - minY) * binsY;
 		++H[indexX][indexY];
 		++count;

@@ -43,6 +43,7 @@ std::vector<int> calculate_indices_1d(
 		if (value >= min && value < max)
 		{
 			T normalized = (value - min) / (max - min);
+			#pragma warning(suppress: 4244)
 			int index = normalized * bins;  // Implicit conversion to integer.
 			result[i] = index;
 		}
@@ -94,11 +95,13 @@ std::vector<index_pair> calculate_indices_2d(
 			if (x == maxX)
 				indexX = binsX - 1;
 			else
+				#pragma warning(suppress: 4244)
 				indexX = (x - minX) / (maxX - minX) * binsX;
 			int indexY;
 			if (y == maxY)
 				indexY = binsY - 1;
 			else
+				#pragma warning(suppress: 4244)
 				indexY = (y - minY) / (maxY - minY) * binsY;
 			result[i] = index_pair {indexX, indexY}; // I hope this is allowed.
 		}
@@ -253,7 +256,7 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	#pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
-		auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		unsigned int seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 rgen(seed);
 		std::vector<T> mis(nr_repetitions);
 		for (int j = 0; j < nr_repetitions; ++j)
@@ -326,6 +329,7 @@ void shifted_mutual_information_with_bootstrap(
 
 // Compile for these instances:
 typedef std::mt19937 RNG;
+typedef std::vector<int>::iterator ivec_iter;
 //		For float:
 // 			Take vector iterator.
 typedef std::vector<float>::iterator fvec_iter;
@@ -336,7 +340,7 @@ template std::vector<float> shifted_mutual_information(
 		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int);
 template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, int);
-template float bootstrapped_mi(fvec_iter, fvec_iter, fvec_iter, fvec_iter, int, int, float, float, float, float, int, RNG&);
+template float bootstrapped_mi(ivec_iter, ivec_iter, ivec_iter, ivec_iter, int, int, float, float, float, float, int, RNG&);
 //			Take normal C-style arrays (i.e. pointers)
 template std::vector<int> calculate_indices_1d(int, float, float, const float*, const float*);
 template std::vector<index_pair> calculate_indices_2d(
@@ -349,7 +353,7 @@ template std::vector<float> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int);
 template void shifted_mutual_information_with_bootstrap(
 	int, int, int, int, float, float, float, float, const float*, const float*, const float*, const float*, int, int, int, float*);
-template float bootstrapped_mi(const float*, const float*, const float*, const float*, int, int, float, float, float, float, int, RNG&);
+template float bootstrapped_mi(const int*, const int*, const int*, const int*, int, int, float, float, float, float, int, RNG&);
 //		For double:
 // 			Take vector iterator.
 typedef std::vector<double>::iterator dvec_iter;
@@ -360,7 +364,7 @@ template std::vector<double> shifted_mutual_information(
 		int, int, int, int, double, double, double, double, dvec_iter, dvec_iter, dvec_iter, dvec_iter, int);
 template std::vector<double> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, double, double, double, double, dvec_iter, dvec_iter, dvec_iter, dvec_iter, int, int, int);
-template double bootstrapped_mi(dvec_iter, dvec_iter, dvec_iter, dvec_iter, int, int, double, double, double, double, int, RNG&);
+template double bootstrapped_mi(ivec_iter, ivec_iter, ivec_iter, ivec_iter, int, int, double, double, double, double, int, RNG&);
 //			Take normal C-style arrays (i.e. pointers)
 template std::vector<int> calculate_indices_1d(int, double, double, const double*, const double*);
 template std::vector<index_pair> calculate_indices_2d(
@@ -373,4 +377,4 @@ template std::vector<double> shifted_mutual_information_with_bootstrap(
 		int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int, int, int);
 template void shifted_mutual_information_with_bootstrap(
 	int, int, int, int, double, double, double, double, const double*, const double*, const double*, const double*, int, int, int, double*);
-template double bootstrapped_mi(const double*, const double*, const double*, const double*, int, int, double, double, double, double, int, RNG&);
+template double bootstrapped_mi(const int*, const int*, const int*, const int*, int, int, double, double, double, double, int, RNG&);

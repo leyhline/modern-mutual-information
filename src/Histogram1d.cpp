@@ -97,6 +97,7 @@ void Histogram1d<T>::transfer(const T value)
 	if (value >= min && value < max)
 	{
 		T normalized = (value - min) / (max - min);
+		#pragma warning(suppress: 4244)
 		int index = normalized * bins;  // Implicit conversion to integer.
 		++H[index];
 		++count;
