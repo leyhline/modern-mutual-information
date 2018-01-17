@@ -22,7 +22,6 @@ endif ()
 
 include_directories("${PROJECT_SOURCE_DIR}/lib" "${PROJECT_SOURCE_DIR}/src")
 
-file(GLOB SOURCES src/*.cpp)
 file(GLOB TEST_SOURCES test/*.cpp)
 
 # Copy test data to target directory.
@@ -40,8 +39,8 @@ IF(CMAKE_CROSSCOMPILING)
     SET(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 ENDIF(CMAKE_CROSSCOMPILING)
 
-add_executable(run_tests ${TEST_SOURCES} ${SOURCES})
-add_executable(shiftmi main.cpp ${SOURCES})
+add_executable(run_tests ${TEST_SOURCES})
+add_executable(shiftmi main.cpp)
 
 # Automatically run tests after compilation if possible.
 IF(NOT CMAKE_CROSSCOMPILING)
