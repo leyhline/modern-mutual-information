@@ -57,12 +57,12 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "bin sizes need to be a 1x2 matrix.");
     int* bin_sizes = (int*)mxGetData(prhs[1]);
 
-    if (!mxIsSingle(prhs[2]))
-        mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "min and max values need to be of type single (float).");
+    if (!mxIsDouble(prhs[2]))
+        mexErrMsgIdAndTxt("modern_mutual_information:notDouble", "min and max values need to be of type double.");
     if (   mxGetM(prhs[2]) != 1
         || mxGetN(prhs[2]) != 4)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "minmax_values need to be a 1x4 matrix.");
-    float* minmax = (float*)mxGetData(prhs[2]);
+    double* minmax = (double*)mxGetData(prhs[2]);
 
     if (!mxIsInt32(prhs[3]))
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "Input matrix must be type Int32.");
@@ -86,8 +86,8 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
 
     // Now do the calculation and write the result back.
     mwSize outputSize = (shift[1] - shift[0]) / shift_step + 1;
-    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxSINGLE_CLASS, mxREAL);
-    float* outMatrix = (float*)mxGetData(plhs[0]);
+    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxDOUBLE_CLASS, mxREAL);
+    double* outMatrix = (double*)mxGetData(plhs[0]);
     shifted_mutual_information(
             shift[0], shift[1],
             bin_sizes[0], bin_sizes[1],

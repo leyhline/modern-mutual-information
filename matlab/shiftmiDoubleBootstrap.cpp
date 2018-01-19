@@ -21,14 +21,16 @@
 /**
  * @param nlhs Size of the output array, should be 1
  * @param plhs The output is just one mxArray holding the shifted mutual information
- * @param nrhs Number of input arguments; should be 6
+ * @param nrhs Number of input arguments; should be 8
  * @param prhs The input arguments, specifically:
  *             [0] [shift_from, shift_to]
  *             [1] [binsX, binsY]
  *             [2] [minX maxX minY maxY]
  *             [3] histogram indices on x axis
  *             [4] histogram indices on y axis
- *             [5] shift_step (size of steps when shifting)
+ *			   [5] number of sampled temporary histograms
+ *             [6] number of repetitions
+ *             [7] shift_step (size of steps when shifting)
  * See: <https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html>
  */
 void mexFunction(int nlhs,              // Number of output (left-side) arguments, or the size of the plhs array.
@@ -37,8 +39,8 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
                  const mxArray *prhs[]) // Array of input arguments.
 {
     // Check number of arguments.
-    if (nrhs != 6)
-        mexErrMsgIdAndTxt("modern_mutual_information:nrhs", "Six inputs required.");
+    if (nrhs != 8)
+        mexErrMsgIdAndTxt("modern_mutual_information:nrhs", "Eight inputs required.");
     if (nlhs != 1)
         mexErrMsgIdAndTxt("modern_mutual_information:nlhs", "One output required.");
 
@@ -57,12 +59,12 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "bin sizes need to be a 1x2 matrix.");
     int* bin_sizes = (int*)mxGetData(prhs[1]);
 
-    if (!mxIsSingle(prhs[2]))
-        mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "min and max values need to be of type single (float).");
+    if (!mxIsDouble(prhs[2]))
+        mexErrMsgIdAndTxt("modern_mutual_information:notDouble", "min and max values need to be of type double.");
     if (   mxGetM(prhs[2]) != 1
         || mxGetN(prhs[2]) != 4)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "minmax_values need to be a 1x4 matrix.");
-    float* minmax = (float*)mxGetData(prhs[2]);
+    double* minmax = (double*)mxGetData(prhs[2]);
 
     if (!mxIsInt32(prhs[3]))
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "Input matrix must be type Int32.");
@@ -78,22 +80,35 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
     int* dataY = (int*)mxGetData(prhs[4]);
     mwSize dataY_size = mxGetN(prhs[4]);
 
-    if (!mxIsScalar(prhs[5]))
+	if (!mxIsScalar(prhs[5]))
+		mexErrMsgIdAndTxt("modern_mutual_information:notScalar", "nr_samples needs to be a scalar value.");
+	if (!mxIsInt32(prhs[5]))
+		mexErrMsgIdAndTxt("modern_mutual_information:notInt", "nr_samples needs to be of type Int32.");
+	int nr_samples = (int)mxGetScalar(prhs[5]);
+
+	if (!mxIsScalar(prhs[6]))
+		mexErrMsgIdAndTxt("modern_mutual_information:notScalar", "nr_repetitions needs to be a scalar value.");
+	if (!mxIsInt32(prhs[6]))
+		mexErrMsgIdAndTxt("modern_mutual_information:notInt", "nr_repetitions needs to be of type Int32.");
+	int nr_repetitions = (int)mxGetScalar(prhs[6]);
+
+    if (!mxIsScalar(prhs[7]))
         mexErrMsgIdAndTxt("modern_mutual_information:notScalar", "shift_step needs to be a scalar value.");
-    if (!mxIsInt32(prhs[5]))
+    if (!mxIsInt32(prhs[7]))
         mexErrMsgIdAndTxt("modern_mutual_information:notInt", "shift_step needs to be of type Int32.");
-    int shift_step = (int)mxGetScalar(prhs[5]); // Casting double to int should be okay according to documentation.
+    int shift_step = (int)mxGetScalar(prhs[7]); // Casting double to int should be okay according to documentation.
 
     // Now do the calculation and write the result back.
     mwSize outputSize = (shift[1] - shift[0]) / shift_step + 1;
-    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxSINGLE_CLASS, mxREAL);
-    float* outMatrix = (float*)mxGetData(plhs[0]);
-    shifted_mutual_information(
+    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxDOUBLE_CLASS, mxREAL);
+    double* outMatrix = (double*)mxGetData(plhs[0]);
+	shifted_mutual_information_with_bootstrap(
             shift[0], shift[1],
             bin_sizes[0], bin_sizes[1],
             minmax[0], minmax[1], minmax[2], minmax[3],
             dataX, dataX + dataX_size,
             dataY, dataY + dataY_size,
+		    nr_samples, nr_repetitions,
             shift_step,
             outMatrix);
 }

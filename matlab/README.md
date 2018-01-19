@@ -5,6 +5,9 @@ The .cpp files in this folder contain the necessary mex functions. For compilati
 
 ```
 mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiFloat.cpp
+mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiDouble.cpp
+mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiFloatBootstrap.cpp
+mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiDoubleBootstrap.cpp
 ```
 
 The following arguments are passed:

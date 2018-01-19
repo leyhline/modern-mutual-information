@@ -130,8 +130,9 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 
 /**
  * Similar to shifted_mutual_information but additionally uses bootstrapping
- * this increasing its runtime. There is one additional parameter:
+ * this increasing its runtime. There are two additional parameters:
  * @param nr_samples How many temporary histograms to generate by sampling the data.
+ * @param nr_repetitions How many times to repeat this process to minimize noise.
  */
 template<typename T, typename Iterator>
 std::vector<T> shifted_mutual_information_with_bootstrap(
@@ -484,7 +485,7 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 					indY_begin, indY_end,
 					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
-			mis[j] = mi;
+			mis[j] = mi; // TODO Return a matrix of all mis.
 		}
 		T mean = calc_mean<T>(mis.begin(), mis.end());
 		result[(i - shift_from) / shift_step] = mean;
