@@ -153,8 +153,8 @@ void shifted_mutual_information(
 	    const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
-		const T* beginX, const T* endX,
-		const T* beginY, const T* endY,
+		const int* beginX, const int* endX,
+		const int* beginY, const int* endY,
 		const int shift_step,
 		T* output);
 
@@ -168,8 +168,8 @@ void shifted_mutual_information_with_bootstrap(
 		const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
-		const T* beginX, const T* endX,
-		const T* beginY, const T* endY,
+		const int* beginX, const int* endX,
+		const int* beginY, const int* endY,
 		int nr_samples, int nr_repetitions,
 		const int shift_step,
 		T* output);
@@ -345,18 +345,14 @@ std::vector<T> shifted_mutual_information(
 	const int shift_from, const int shift_to,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
-	const std::vector<int>::iterator beginX, const std::vector<int>::iterator endX,
-	const std::vector<int>::iterator beginY, const std::vector<int>::iterator endY,
+	const int* beginX, const int* endX,
+	const int* beginY, const int* endY,
 	const int shift_step /* 1 */)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
 	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
 		binsX, binsY, minX, maxX, minY, maxY, shift_step);
-	auto indX_begin = beginX;
-	auto indX_end = endX;
-	auto indY_begin = beginY;
-	auto indY_end = endY;
 	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
 #pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
@@ -364,18 +360,18 @@ std::vector<T> shifted_mutual_information(
 		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
 		if (i < 0)
 		{
-			hist.increment_cpu(indX_begin, std::prev(indX_end, -i),
-				std::next(indY_begin, -i), indY_end);
+			hist.increment_cpu(beginX, std::prev(endX, -i),
+				std::next(beginY, -i), endY);
 		}
 		else if (i > 0)
 		{
-			hist.increment_cpu(std::next(indX_begin, i), indX_end,
-				indY_begin, std::prev(indY_end, i));
+			hist.increment_cpu(std::next(beginX, i), endX,
+				beginY, std::prev(endY, i));
 		}
 		else // Should not be necessary but better be explicit.
 		{
-			hist.increment_cpu(indX_begin, indX_end,
-				indY_begin, indY_end);
+			hist.increment_cpu(beginX, endX,
+				beginY, endY);
 		}
 		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
 	}
@@ -501,8 +497,8 @@ void shifted_mutual_information(
 	const int shift_from, const int shift_to,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
-	const T* beginX, const T* endX,
-	const T* beginY, const T* endY,
+	const int* beginX, const int* endX,
+	const int* beginY, const int* endY,
 	const int shift_step,
 	T* output)
 {
@@ -520,8 +516,8 @@ void shifted_mutual_information_with_bootstrap(
 	const int shift_from, const int shift_to,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
-	const T* beginX, const T* endX,
-	const T* beginY, const T* endY,
+	const int* beginX, const int* endX,
+	const int* beginY, const int* endY,
 	int nr_samples, int nr_repetitions,
 	const int shift_step,
 	T* output)

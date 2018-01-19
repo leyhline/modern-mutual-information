@@ -4,7 +4,7 @@ The following instructions assume Windows with MATLAB and Visual Studio installe
 The .cpp files in this folder contain the necessary mex functions. For compilation call:
 
 ```
-mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiFloat.cpp ..\src\Histogram1d.cpp ..\src\Histogram2d.cpp ..\src\utilities.cpp
+mex -v COMPFLAGS="$COMPFLAGS /W3 /openmp" -O -largeArrayDims shiftmiFloat.cpp
 ```
 
 The following arguments are passed:

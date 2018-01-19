@@ -26,8 +26,8 @@
  *             [0] [shift_from, shift_to]
  *             [1] [binsX, binsY]
  *             [2] [minX maxX minY maxY]
- *             [3] input data on x axis
- *             [4] input data on y axis
+ *             [3] histogram indices on x axis
+ *             [4] histogram indices on y axis
  *             [5] shift_step (size of steps when shifting)
  * See: <https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html>
  */
@@ -64,18 +64,18 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "minmax_values need to be a 1x4 matrix.");
     float* minmax = (float*)mxGetData(prhs[2]);
 
-    if (!mxIsSingle(prhs[3]))
-        mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "Input matrix must be type single (float).");
+    if (!mxIsInt32(prhs[3]))
+        mexErrMsgIdAndTxt("modern_mutual_information:notInt", "Input matrix must be type Int32.");
     if (mxGetM(prhs[3]) != 1)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "Input matrix must be a row vector.");
-    float* dataX = (float*)mxGetData(prhs[3]);
+    int* dataX = (int*)mxGetData(prhs[3]);
     mwSize dataX_size = mxGetN(prhs[3]);
 
-    if (!mxIsSingle(prhs[4]))
-        mexErrMsgIdAndTxt("modern_mutual_information:notSingle", "Input matrix must be type single (float).");
+    if (!mxIsInt32(prhs[4]))
+        mexErrMsgIdAndTxt("modern_mutual_information:notInt", "Input matrix must be type Int32.");
     if (mxGetM(prhs[4]) != 1)
         mexErrMsgIdAndTxt("modern_mutual_information:wrongDimensions", "Input matrix must be a row vector.");
-    float* dataY = (float*)mxGetData(prhs[4]);
+    int* dataY = (int*)mxGetData(prhs[4]);
     mwSize dataY_size = mxGetN(prhs[4]);
 
     if (!mxIsScalar(prhs[5]))
