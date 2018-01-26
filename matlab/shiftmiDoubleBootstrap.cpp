@@ -103,7 +103,7 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
 
     // Now do the calculation and write the result back.
     mwSize outputSize = (shift[1] - shift[0]) / shift_step + 1;
-    plhs[0] = mxCreateNumericMatrix(1, outputSize, mxDOUBLE_CLASS, mxREAL);
+    plhs[0] = mxCreateNumericMatrix(nr_repetitions, outputSize, mxDOUBLE_CLASS, mxREAL);
     double* outMatrix = (double*)mxGetData(plhs[0]);
 	shifted_mutual_information_with_bootstrap(
             shift[0], shift[1],
