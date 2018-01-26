@@ -1,11 +1,9 @@
-function result = shiftmiFloatBootstrapWrapper( x, y, minmaxOfData, varargin )
+function result = shiftmiFloatBootstrapWrapper( x, y, varargin )
 %   SHIFTMIFLOATBOOTSTRAPWRAPPER Easier interface to calculating shifted mutual in parallel.
 %   SHIFTMIFLOATBOOTSTRAPWRAPPER(x, y) shifts data vectors and calculates mutual
 %   information at each step.
 %   x A row vector holding histogram indices of the first data series.
 %   y A row vector holding histogram indices of the second data series.
-%   minmaxOfData A row vector holding the minimum and maximum values
-%                of the data: [minFirst maxFirst minSecond maxSecond]
 %   Note: Both x and y need to have the same size.
 %   Optionally the following name-value pairs can be specified:
 %   'shiftRange', [from to]         (default: [-500 500])
@@ -15,7 +13,7 @@ function result = shiftmiFloatBootstrapWrapper( x, y, minmaxOfData, varargin )
 %   'shiftSteps',  stepNumber       (default: 1)
 x = int32(x);
 y = int32(y);
-minmaxOfData = single(minmaxOfData);
+minmaxOfData = single([0 1 0 1]);  % This isn't considered but needs to be passed to the function below.
 p = inputParser;
 addParameter(p, 'shiftRange', [-500 500]);
 addParameter(p, 'binSizes', [10 10]);
