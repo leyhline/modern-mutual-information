@@ -80,6 +80,9 @@ void mexFunction(int nlhs,              // Number of output (left-side) argument
     int* dataY = (int*)mxGetData(prhs[4]);
     mwSize dataY_size = mxGetN(prhs[4]);
 
+	if (dataX_size != dataY_size)
+		mexErrMsgIdAndTxt("modern_mutual_information:unequalSize", "Both input data vectors need to have same size.");
+
 	if (!mxIsScalar(prhs[5]))
 		mexErrMsgIdAndTxt("modern_mutual_information:notScalar", "nr_samples needs to be a scalar value.");
 	if (!mxIsInt32(prhs[5]))
