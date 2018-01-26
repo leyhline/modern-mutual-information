@@ -149,6 +149,7 @@ std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 /**
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
+ * The values specified by beginX, endX, beginY, endY are the histogram indices in range [0, nr_bins).
  * @param output A pointer to to a vector of size (shift_to - shift_from) / shift_step + 1
  */
 template<typename T>
@@ -164,6 +165,7 @@ void shifted_mutual_information(
 /**
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
+ * The values specified by beginX, endX, beginY, endY are the histogram indices in range [0, nr_bins).
  * @param output A pointer to to a vector of size ((shift_to - shift_from) / shift_step + 1) * nr_repetitions
  */
 template<typename T>
@@ -342,45 +344,6 @@ std::vector<T> shifted_mutual_information(
 	return result;
 }
 
-/// If an Iterator of type int is passed then assume these are already the indices.
-template<typename T>
-std::vector<T> shifted_mutual_information(
-	const int shift_from, const int shift_to,
-	const int binsX, const int binsY,
-	const T minX, const T maxX, const T minY, const T maxY,
-	const int* beginX, const int* endX,
-	const int* beginY, const int* endY,
-	const int shift_step /* 1 */)
-{
-	size_t sizeX = std::distance(beginX, endX);
-	size_t sizeY = std::distance(beginY, endY);
-	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
-		binsX, binsY, minX, maxX, minY, maxY, shift_step);
-	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
-#pragma omp parallel for
-	for (int i = shift_from; i <= shift_to; i += shift_step)
-	{
-		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
-		if (i < 0)
-		{
-			hist.increment_cpu(beginX, std::prev(endX, -i),
-				std::next(beginY, -i), endY);
-		}
-		else if (i > 0)
-		{
-			hist.increment_cpu(std::next(beginX, i), endX,
-				beginY, std::prev(endY, i));
-		}
-		else // Should not be necessary but better be explicit.
-		{
-			hist.increment_cpu(beginX, endX,
-				beginY, endY);
-		}
-		result[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
-	}
-	return result;
-}
-
 template<typename T, typename Iterator>
 T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 	const Iterator beginY, const Iterator endY,
@@ -474,22 +437,59 @@ std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 					indY_begin, indY_end,
 					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
-			result[(i - shift_from) / shift_step][j] = mi; // TODO Return a matrix of all mis.
+			result[(i - shift_from) / shift_step][j] = mi;
 		}
 	}
 	return result;
 }
 
-/// If an Iterator of type int is passed then assume these are already the indices.
 template<typename T>
-std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
+void shifted_mutual_information(
+	const int shift_from, const int shift_to,
+	const int binsX, const int binsY,
+	const T minX, const T maxX, const T minY, const T maxY,
+	const int* beginX, const int* endX,
+	const int* beginY, const int* endY,
+	const int shift_step,
+	T* output)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
+		binsX, binsY, minX, maxX, minY, maxY, shift_step);
+#pragma omp parallel for
+	for (int i = shift_from; i <= shift_to; i += shift_step)
+	{
+		Histogram2d<T> hist(binsX, binsY, minX, maxX, minY, maxY);
+		if (i < 0)
+		{
+			hist.increment_cpu(beginX, std::prev(endX, -i),
+				std::next(beginY, -i), endY);
+		}
+		else if (i > 0)
+		{
+			hist.increment_cpu(std::next(beginX, i), endX,
+				beginY, std::prev(endY, i));
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			hist.increment_cpu(beginX, endX,
+				beginY, endY);
+		}
+		output[(i - shift_from) / shift_step] = *hist.calculate_mutual_information();
+	}
+}
+
+template<typename T>
+void shifted_mutual_information_with_bootstrap(
 	const int shift_from, const int shift_to,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
 	const int* beginX, const int* endX,
 	const int* beginY, const int* endY,
 	int nr_samples, int nr_repetitions,
-	const int shift_step /* 1 */)
+	const int shift_step,
+	T* output)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
@@ -499,8 +499,6 @@ std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 		throw std::logic_error("For bootstrapping you need a minimum of one sample.");
 	if (nr_repetitions < 1)
 		throw std::logic_error("There needs to be at least one repetition of the bootstrapping process.");
-	std::vector< std::vector<T> > result((shift_to - shift_from) / shift_step + 1,
-										 std::vector<T>(nr_repetitions));
 #pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
@@ -527,50 +525,7 @@ std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 					beginY, endY,
 					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
-			result[(i - shift_from) / shift_step][j] = mi; // TODO Return a matrix of all mis.
-		}
-	}
-	return result;
-}
-
-template<typename T>
-void shifted_mutual_information(
-	const int shift_from, const int shift_to,
-	const int binsX, const int binsY,
-	const T minX, const T maxX, const T minY, const T maxY,
-	const int* beginX, const int* endX,
-	const int* beginY, const int* endY,
-	const int shift_step,
-	T* output)
-{
-	std::vector<T> result = shifted_mutual_information<T>(
-		shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
-		beginX, endX, beginY, endY, shift_step);
-	for (int i = 0, end = result.size(); i < end; ++i)
-	{
-		output[i] = result[i];
-	}
-}
-
-template<typename T>
-void shifted_mutual_information_with_bootstrap(
-	const int shift_from, const int shift_to,
-	const int binsX, const int binsY,
-	const T minX, const T maxX, const T minY, const T maxY,
-	const int* beginX, const int* endX,
-	const int* beginY, const int* endY,
-	int nr_samples, int nr_repetitions,
-	const int shift_step,
-	T* output)
-{
-	std::vector< std::vector<T> > result = shifted_mutual_information_with_bootstrap<T>(
-		shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
-		beginX, endX, beginY, endY, nr_samples, nr_repetitions, shift_step);
-	for (int i = 0, end = result.size(); i < end; ++i)
-	{
-		for (int j = 0; j < nr_repetitions; ++j)
-		{
-			output[(i * nr_repetitions) + j] = result[i][j];
+			output[((i - shift_from) / shift_step) * nr_repetitions + j] = mi;
 		}
 	}
 }
