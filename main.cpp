@@ -38,6 +38,31 @@ constexpr int default_bootstrap_reps    {100};
 #include "src/SimpleBinaryFile.h"
 #include "src/utilities.h"
 
+template<typename T, typename Iterator>
+inline T calc_mean(Iterator begin, Iterator end)
+{
+	T mean = 0;
+	size_t size = std::distance(begin, end);
+	for (size_t i = 0; i < size; ++i)
+	{
+		mean += begin[i];
+	}
+	return mean / T(size);
+}
+
+template<typename T, typename Iterator>
+inline T calc_std(Iterator begin, Iterator end, T mean)
+{
+	T std = 0;
+	size_t size = std::distance(begin, end);
+	for (size_t i = 0; i < size; ++i)
+	{
+		T temp = begin[i] - mean;
+		std += temp * temp;
+	}
+	return std::sqrt(std / T(size));
+}
+
 inline bool file_exists(const char* filename)
 {
 	std::ifstream fs(filename);
@@ -149,7 +174,8 @@ int main(int argc, char* argv[])
 		std::vector<float> result;
 		if (bootstrapping.getValue())
 		{
-			result = shifted_mutual_information_with_bootstrap(
+			// These are `nr_repetition` vectors of mutual information
+			auto whole_result = shifted_mutual_information_with_bootstrap(
 				shift_from.getValue(), shift_to.getValue(),
 				bins_x.getValue(), bins_y.getValue(),
 				minmax1.first, minmax1.second,
@@ -158,6 +184,16 @@ int main(int argc, char* argv[])
 				input2->getData().begin(), input2->getData().end(),
 				bootstrapping_samples.getValue(),
 				bootstrapping_reps.getValue(), shift_step.getValue());
+			result.resize(whole_result.size() * 2);
+			// Now take the mean over all repetitions:
+			for (int i = 0, end = whole_result.size(); i < end; ++i)
+			{
+				result[i] = calc_mean<float>(whole_result[i].begin(), whole_result[i].end());
+			}
+			for (int i = 0, end = whole_result.size(); i < end; ++i)
+			{
+				result[end + i] = calc_std<float>(whole_result[i].begin(), whole_result[i].end(), result[i]);
+			}
 		}
 		else
 		{
@@ -205,4 +241,3 @@ int main(int argc, char* argv[])
 	}
 	return EXIT_SUCCESS;
 }
-

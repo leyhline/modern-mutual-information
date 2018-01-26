@@ -133,9 +133,11 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
  * this increasing its runtime. There are two additional parameters:
  * @param nr_samples How many temporary histograms to generate by sampling the data.
  * @param nr_repetitions How many times to repeat this process to minimize noise.
+ * @return A vector of size `(shift_to - shift_from) / shift_step + 1`
+	holding vectors of size `nr_repetitions` with the mutual information.
  */
 template<typename T, typename Iterator>
-std::vector<T> shifted_mutual_information_with_bootstrap(
+std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 		const int shift_from, const int shift_to,
 		const int binsX, const int binsY,
 		const T minX, const T maxX, const T minY, const T maxY,
@@ -162,7 +164,7 @@ void shifted_mutual_information(
 /**
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
- * @param output A pointer to to a vector of size (shift_to - shift_from) / shift_step + 1
+ * @param output A pointer to to a vector of size ((shift_to - shift_from) / shift_step + 1) * nr_repetitions
  */
 template<typename T>
 void shifted_mutual_information_with_bootstrap(
@@ -421,20 +423,7 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 }
 
 template<typename T, typename Iterator>
-inline T calc_mean(Iterator begin, Iterator end)
-{
-	T mean = 0;
-	size_t size = std::distance(begin, end);
-	T total = T(size);
-	for (size_t i = 0; i < size; ++i)
-	{
-		mean += begin[i] / total;
-	}
-	return mean;
-}
-
-template<typename T, typename Iterator>
-std::vector<T> shifted_mutual_information_with_bootstrap(
+std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 	const int shift_from, const int shift_to,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
@@ -457,13 +446,13 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 	auto indX_end = indicesX.end();
 	auto indY_begin = indicesY.begin();
 	auto indY_end = indicesY.end();
-	std::vector<T> result((shift_to - shift_from) / shift_step + 1);
+	std::vector< std::vector<T> > result((shift_to - shift_from) / shift_step + 1,
+										 std::vector<T>(nr_repetitions));
 #pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
 		unsigned int seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 rgen(seed);
-		std::vector<T> mis(nr_repetitions);
 		for (int j = 0; j < nr_repetitions; ++j)
 		{
 			T mi;
@@ -485,10 +474,61 @@ std::vector<T> shifted_mutual_information_with_bootstrap(
 					indY_begin, indY_end,
 					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
 			}
-			mis[j] = mi; // TODO Return a matrix of all mis.
+			result[(i - shift_from) / shift_step][j] = mi; // TODO Return a matrix of all mis.
 		}
-		T mean = calc_mean<T>(mis.begin(), mis.end());
-		result[(i - shift_from) / shift_step] = mean;
+	}
+	return result;
+}
+
+/// If an Iterator of type int is passed then assume these are already the indices.
+template<typename T>
+std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
+	const int shift_from, const int shift_to,
+	const int binsX, const int binsY,
+	const T minX, const T maxX, const T minY, const T maxY,
+	const int* beginX, const int* endX,
+	const int* beginY, const int* endY,
+	int nr_samples, int nr_repetitions,
+	const int shift_step /* 1 */)
+{
+	size_t sizeX = std::distance(beginX, endX);
+	size_t sizeY = std::distance(beginY, endY);
+	check_shifted_mutual_information(sizeX, sizeY, shift_from, shift_to,
+		binsX, binsY, minX, maxX, minY, maxY, shift_step);
+	if (nr_samples < 1)
+		throw std::logic_error("For bootstrapping you need a minimum of one sample.");
+	if (nr_repetitions < 1)
+		throw std::logic_error("There needs to be at least one repetition of the bootstrapping process.");
+	std::vector< std::vector<T> > result((shift_to - shift_from) / shift_step + 1,
+										 std::vector<T>(nr_repetitions));
+#pragma omp parallel for
+	for (int i = shift_from; i <= shift_to; i += shift_step)
+	{
+		unsigned int seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		std::mt19937 rgen(seed);
+		for (int j = 0; j < nr_repetitions; ++j)
+		{
+			T mi;
+			if (i < 0)
+			{
+				mi = bootstrapped_mi<T>(beginX, std::prev(endX, -i),
+					std::next(beginY, -i), endY,
+					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
+			}
+			else if (i > 0)
+			{
+				mi = bootstrapped_mi<T>(std::next(beginX, i), endX,
+					beginY, std::prev(endY, i),
+					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
+			}
+			else // Should not be necessary but better be explicit.
+			{
+				mi = bootstrapped_mi<T>(beginX, endX,
+					beginY, endY,
+					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
+			}
+			result[(i - shift_from) / shift_step][j] = mi; // TODO Return a matrix of all mis.
+		}
 	}
 	return result;
 }
@@ -523,11 +563,14 @@ void shifted_mutual_information_with_bootstrap(
 	const int shift_step,
 	T* output)
 {
-	std::vector<T> result = shifted_mutual_information_with_bootstrap<T>(
+	std::vector< std::vector<T> > result = shifted_mutual_information_with_bootstrap<T>(
 		shift_from, shift_to, binsX, binsY, minX, maxX, minY, maxY,
 		beginX, endX, beginY, endY, nr_samples, nr_repetitions, shift_step);
 	for (int i = 0, end = result.size(); i < end; ++i)
 	{
-		output[i] = result[i];
+		for (int j = 0; j < nr_repetitions; ++j)
+		{
+			output[(i * nr_repetitions) + j] = result[i][j];
+		}
 	}
 }
