@@ -21,7 +21,6 @@
 #include <algorithm>
 #include "../src/Histogram1d.h"
 #include "../src/containers.h"
-#include "../src/utilities.h"
 
 TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histogram1d]" )
 {
@@ -34,8 +33,8 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	Histogram1d<float> hist(10, dataRange);
 	REQUIRE( hist.getNrBins() == 10 );
 	DataRange<float> returnedDataRange = hist.getDataRange();
-	REQUIRE( returnedDataRange.getMin() == Approx(-500.f) );
-	REQUIRE( returnedDataRange.getMax() == Approx(499.f) );
+	REQUIRE( returnedDataRange.min == Approx(-500.f) );
+	REQUIRE( returnedDataRange.max == Approx(499.f) );
 	CHECK( hist.getElementCount() == 0 );
 	hist.calculate(input.begin(), input.end());
 	auto result = hist.getHistogramData();
@@ -59,11 +58,4 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 
 	Histogram1d<float> hist_copy(1, dataRange2, result_1bin, 1000);
 	CHECK( hist_copy.getHistogramData()[0] == 1000 );
-
-	auto indices = calculate_indices_1d(10, -500.f, 499.f, input.begin(), input.end());
-	Histogram1d<float> hist_with_indices(10, dataRange);
-	hist_with_indices.increment(indices.begin(), indices.end());
-	auto result_with_indices = hist_with_indices.getHistogramData();
-	REQUIRE( hist_with_indices.getElementCount() == 1000 );
-	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }

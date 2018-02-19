@@ -151,8 +151,8 @@ DataRange<Precision> Histogram1d<Precision>::getDataRange() const
 template<typename Precision>
 void Histogram1d<Precision>::transfer(const Precision value)
 {
-	Precision min = dataRange.getMin();
-	Precision max = dataRange.getMax();
+	Precision min = dataRange.min;
+	Precision max = dataRange.max;
 	if (value >= min && value < max)
 	{
 		Precision normalized = (value - min) / (max - min);
@@ -171,8 +171,6 @@ void Histogram1d<Precision>::transfer(const Precision value)
 template<typename Precision>
 void Histogram1d<Precision>::checkConstructor() const
 {
-	if (dataRange.getMin() >= dataRange.getMax())
-		throw std::logic_error("min has to be smaller than max.");
 	if (nrBins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
 }

@@ -27,29 +27,18 @@
 #include <iterator>
 #include <cmath>
 #include "Histogram1d.h"
+#include "../src/containers.h"
 
 /**
  * A class for 2D-histogram calculation.
  * Usable for all integral types.
  */
-template<typename T>
-	// requires Integral<T>
+template<typename Precision>
+	// requires Integral<Precision>
 class Histogram2d
 {
 public:
-	/**
-	 * Constructor for known range of values.
-	 * If there are values outside of [min,max] they are ignored at insertion.
-	 * @param binsX Number of bins on histogram's x-axis.
-	 * @param binsY Number of bins on histogram's y-axis.
-	 * @param minX Minimum value in first data vector.
-	 * @param maxX Maximum value in first data vector.
-	 * @param minY Minimum value in second data vector.
-	 * @param maxY Maximum value in second data vector.
-	 */
-	Histogram2d(int binsX, int binsY,
-			    T minX, T maxX,
-			    T minY, T maxY);
+	Histogram2d(int binsX, int binsY, DataRange2D<Precision> dataRange);
 
 	/**
 	 * Calculate the histogram single-threaded on the CPU.
@@ -59,20 +48,8 @@ public:
 	 * @param endY Iterator to the end of the second data container.
 	 */
 	template<typename Iterator>
-	void calculate_cpu(const Iterator beginX, const Iterator endX,
-					   const Iterator beginY, const Iterator endY);
-
-	/**
-	 * Given an iterator of pairs of indices (specifically the index_pair struct defined
-	 * in utilities.h) this method allows for incrementing the histogram at these
-	 * indices' positions.
-	 * If one of the index positions is smaller than the corresponding bin number
-	 * no insertion takes place.
-	 * @param begin Iterator to the beginning of the index data.
-	 * @param end: Iterator to the end of the index data.
-	 */
-	template<typename Iterator>
-	void increment_cpu(const Iterator begin, const Iterator end);
+	void calculate(const Iterator beginX, const Iterator endX,
+				   const Iterator beginY, const Iterator endY);
 
 	/**
 	 * Given two iterators with index positions of same size the histogram will
@@ -85,40 +62,23 @@ public:
 	 * @param endY Iterator to the end of the indices corresponding to the y-axis.
 	 */
 	template<typename Iterator>
-	void increment_cpu(const Iterator beginX, const Iterator endX,
-					   const Iterator beginY, const Iterator endY);
-
-	/**
-	 * Increment histogram at specified position by one.
-	 */
-	void increment_at(int iX, int iY);
+	void increment(const Iterator beginX, const Iterator endX,
+				   const Iterator beginY, const Iterator endY);
 
 	/**
 	 * Add another histogram to this one, meaning the values at corresponding
 	 * indices are summed up. Histograms need to have same bin size.
-	 * @param histogram_to_add needs to have same bin size on both axes as original histogram.
+	 * @param histogramToAdd needs to have same bin size on both axes as original histogram.
 	 */
-	void add(const Histogram2d<T>& histogram_to_add);
+	void add(const Histogram2d<Precision>& histogramToAdd);
 
-	/**
-	 * Get bin count of x-axis as specified in constructor.
-	 */
 	int getBinsX() const;
 
-	/**
-	 * Get bin count of y-axis as specified in constructor.
-	 */
 	int getBinsY() const;
 
-	/**
-	 * Get total number of values inserted into histogram.
-	 */
-	int getCount() const;
+	int getElementCount() const;
 
-	/**
-	 * Get reference to histogram vector.
-	 */
-	const std::vector<std::vector<int>>& getHistogram() const;
+	const std::vector<std::vector<int>>& getHistogramData() const;
 
 	/**
 	 * Calculate two 1-D histograms from 2-D histogram.
@@ -127,27 +87,9 @@ public:
 	 * @param force Don't use lazy evaluation and force (re)calculation.
 	 * @return A pair of pointers to the corresponding Histogram1d classes.
 	 */
-	std::pair<const Histogram1d<T>*, const Histogram1d<T>*> reduce1d(bool force=false);
+	std::pair<const Histogram1d<Precision>*, const Histogram1d<Precision>*> reduce1d(bool force=false);
 
-	/**
-	 * Get (supposed) minimum value of the first data vector.
-	 */
-	T getMinX() const;
-
-	/**
-	 * Get (supposed) maximum value of the first data vector.
-	 */
-	T getMaxX() const;
-
-	/**
-	 * Get (supposed) minimum value of the second data vector.
-	 */
-	T getMinY() const;
-
-	/**
-	 * Get (supposed) maximum value of the second data vector.
-	 */
-	T getMaxY() const;
+	DataRange2D<Precision> getDataRange() const;
 
 	/**
 	 * Calculate mutual information.
@@ -156,28 +98,25 @@ public:
 	 * @param force Don't use lazy evaluation and force (re)calculation.
 	 * @return A pointer to the mutual information value.
 	 */
-	const T* calculate_mutual_information(bool force=false);
+	const Precision* calculateMutualInformation(bool force=false);
 
 private:
 	const int binsX;
 	const int binsY;
-	int count;
-	const T minX;
-	const T maxX;
-	const T minY;
-	const T maxY;
-	std::vector<std::vector<int>> H;
-	std::unique_ptr<Histogram1d<T>> hist1dX;
-	std::unique_ptr<Histogram1d<T>> hist1dY;
-	std::unique_ptr<T> mutual_information;
+	int elementCount;
+	const DataRange2D<Precision> dataRange;
+	std::vector<std::vector<int>> histData;
+	std::unique_ptr<Histogram1d<Precision>> histogramX;
+	std::unique_ptr<Histogram1d<Precision>> histogramY;
+	std::unique_ptr<Precision> mutualInformation;
 
 	/**
 	 * Transfer function for actually doing the insertion into H.
 	 * Use x and y parameters to calculate index at which to increment.
 	 */
-	void transfer(const T x, const T y);
+	void inline transfer(const Precision x, const Precision y);
 
-	void check_constructor() const;
+	void checkConstructor() const;
 };
 
 
@@ -185,21 +124,18 @@ private:
 /// IMPLEMENTATION
 //////////////////
 
-template<typename T>
-Histogram2d<T>::Histogram2d(int binsX, int binsY,
-	T minX, T maxX,
-	T minY, T maxY)
-	: binsX(binsX), binsY(binsY), count(0), minX(minX), maxX(maxX),
-	minY(minY), maxY(maxY)
+template<typename Precision>
+Histogram2d<Precision>::Histogram2d(int binsX, int binsY, DataRange2D<Precision> dataRange)
+	: binsX(binsX), binsY(binsY), elementCount(0), dataRange(dataRange)
 {
-	check_constructor();
-	H.resize(binsX, std::vector<int>(binsY, 0));
+	checkConstructor();
+	histData.resize(binsX, std::vector<int>(binsY, 0));
 }
 
-template<typename T>
+template<typename Precision>
 template<typename Iterator>
-void Histogram2d<T>::calculate_cpu(const Iterator beginX, const Iterator endX,
-	const Iterator beginY, const Iterator endY)
+void Histogram2d<Precision>::calculate(const Iterator beginX, const Iterator endX,
+							   const Iterator beginY, const Iterator endY)
 {
 	if (std::distance(beginX, endX) != std::distance(beginY, endY))
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
@@ -209,25 +145,10 @@ void Histogram2d<T>::calculate_cpu(const Iterator beginX, const Iterator endX,
 	}
 }
 
-template<typename T>
+template<typename Precision>
 template<typename Iterator>
-void Histogram2d<T>::increment_cpu(const Iterator begin, const Iterator end)
-{
-	for (auto index = begin; index != end; ++index)
-	{
-		if (index->first  < binsX
-			&& index->second < binsY)
-		{
-			++H[index->first][index->second];
-			++count;
-		}
-	}
-}
-
-template<typename T>
-template<typename Iterator>
-void Histogram2d<T>::increment_cpu(const Iterator beginX, const Iterator endX,
-	const Iterator beginY, const Iterator endY)
+void Histogram2d<Precision>::increment(const Iterator beginX, const Iterator endX,
+						       const Iterator beginY, const Iterator endY)
 {
 	if (std::distance(beginX, endX) != std::distance(beginY, endY))
 		throw std::logic_error("Containers referenced by iterators must have the same size.");
@@ -235,91 +156,67 @@ void Histogram2d<T>::increment_cpu(const Iterator beginX, const Iterator endX,
 	{
 		if (*iX < binsX && *iY < binsY)
 		{
-			++H[*iX][*iY];
-			++count;
+			++histData[*iX][*iY];
+			++elementCount;
 		}
 	}
 }
 
-template<typename T>
-void Histogram2d<T>::increment_at(int iX, int iY)
+template<typename Precision>
+void Histogram2d<Precision>::add(const Histogram2d<Precision>& histogramToAdd)
 {
-	if (iX < binsX && iY < binsY)
-	{
-		++H[iX][iY];
-		++count;
-	}
-}
-
-template<typename T>
-void Histogram2d<T>::add(const Histogram2d<T>& histogram_to_add)
-{
-	if (histogram_to_add.getBinsX() != binsX
-		|| histogram_to_add.getBinsY() != binsY)
+	if (   histogramToAdd.getBinsX() != binsX
+		|| histogramToAdd.getBinsY() != binsY)
 		throw std::logic_error("Unable to sum histograms with different bin size.");
-	auto h2 = histogram_to_add.getHistogram();
+	auto newHistData = histogramToAdd.getHistogramData();
 	for (int x = 0; x < binsX; ++x)
 	{
 		for (int y = 0; y < binsY; ++y)
 		{
-			H[x][y] += h2[x][y];
+			histData[x][y] += newHistData[x][y];
 		}
 	}
-	count += histogram_to_add.getCount();
+	elementCount += histogramToAdd.getElementCount();
 }
 
-template<typename T>
-int Histogram2d<T>::getBinsX() const
+template<typename Precision>
+int Histogram2d<Precision>::getBinsX() const
 {
 	return binsX;
 }
 
-template<typename T>
-int Histogram2d<T>::getBinsY() const
+template<typename Precision>
+int Histogram2d<Precision>::getBinsY() const
 {
 	return binsY;
 }
 
-template<typename T>
-int Histogram2d<T>::getCount() const
+template<typename Precision>
+int Histogram2d<Precision>::getElementCount() const
 {
-	return count;
+	return elementCount;
 }
 
-template<typename T>
-const std::vector<std::vector<int> >& Histogram2d<T>::getHistogram() const
+template<typename Precision>
+const std::vector<std::vector<int> >& Histogram2d<Precision>::getHistogramData() const
 {
-	return H;
+	return histData;
 }
 
-template<typename T>
-T Histogram2d<T>::getMinX() const
+template<typename Precision>
+DataRange2D<Precision> Histogram2d<Precision>::getDataRange() const
 {
-	return minX;
+	return dataRange;
 }
 
-template<typename T>
-T Histogram2d<T>::getMaxX() const
+template<typename Precision>
+void Histogram2d<Precision>::transfer(const Precision x, const Precision y)
 {
-	return maxX;
-}
-
-template<typename T>
-T Histogram2d<T>::getMinY() const
-{
-	return minY;
-}
-
-template<typename T>
-T Histogram2d<T>::getMaxY() const
-{
-	return maxY;
-}
-
-template<typename T>
-void Histogram2d<T>::transfer(const T x, const T y)
-{
-	if (x >= minX
+	Precision minX = dataRange.minX;
+	Precision maxX = dataRange.maxX;
+	Precision minY = dataRange.minY;
+	Precision maxY = dataRange.maxY;
+	if (   x >= minX
 		&& x <= maxX
 		&& y >= minY
 		&& y <= maxY)
@@ -336,66 +233,64 @@ void Histogram2d<T>::transfer(const T x, const T y)
 		else
 #pragma warning(suppress: 4244)
 			indexY = (y - minY) / (maxY - minY) * binsY;
-		++H[indexX][indexY];
-		++count;
+		++histData[indexX][indexY];
+		++elementCount;
 	}
 }
 
-template<typename T>
-std::pair<const Histogram1d<T>*, const Histogram1d<T>*> Histogram2d<T>::reduce1d(bool force /* false */)
+template<typename Precision>
+std::pair<const Histogram1d<Precision>*, const Histogram1d<Precision>*> Histogram2d<Precision>::reduce1d(bool force /* false */)
 {
-	if (force || !hist1dX || !hist1dY)
+	if (force || !histogramX || !histogramY)
 	{
-		std::vector<int> vecX(binsX, 0);
-		std::vector<int> vecY(binsY, 0);
+		std::vector<int> histDataX(binsX, 0);
+		std::vector<int> histDataY(binsY, 0);
 		for (int x = 0; x < binsX; ++x)
 		{
 			for (int y = 0; y < binsY; ++y)
 			{
-				vecX[x] += H[x][y];
-				vecY[y] += H[x][y];
+				histDataX[x] += histData[x][y];
+				histDataY[y] += histData[x][y];
 			}
 		}
-		hist1dX.reset(new Histogram1d<T>(binsX, minX, maxX, vecX, count));
-		hist1dY.reset(new Histogram1d<T>(binsY, minY, maxY, vecY, count));
+		DataRange<Precision> dataRangeX(dataRange.minX, dataRange.maxX);
+		DataRange<Precision> dataRangeY(dataRange.minY, dataRange.maxY);
+		histogramX.reset(new Histogram1d<Precision>(binsX, dataRangeX, histDataX, elementCount));
+		histogramY.reset(new Histogram1d<Precision>(binsY, dataRangeY, histDataY, elementCount));
 	}
-	return std::pair<const Histogram1d<T>*, const Histogram1d<T>*>(hist1dX.get(), hist1dY.get());
+	return std::pair<const Histogram1d<Precision>*, const Histogram1d<Precision>*>(histogramX.get(), histogramY.get());
 }
 
-template<typename T>
-void Histogram2d<T>::check_constructor() const
+template<typename Precision>
+void Histogram2d<Precision>::checkConstructor() const
 {
-	if (minX >= maxX)
-		throw std::logic_error("minX has to be smaller than maxX.");
-	if (minY >= maxY)
-		throw std::logic_error("minY has to be smaller than maxY.");
 	if (binsX < 1)
 		throw std::invalid_argument("There must be at least one binX.");
 	if (binsY < 1)
 		throw std::invalid_argument("There must be at least one binY.");
 }
 
-template <typename T>
-const T* Histogram2d<T>::calculate_mutual_information(bool force /* false */)
+template <typename Precision>
+const Precision* Histogram2d<Precision>::calculateMutualInformation(bool force /* false */)
 {
-	if (force || !mutual_information)
+	if (force || !mutualInformation)
 	{
-		T mi = 0;
-		auto h = reduce1d(force);
+		Precision mi = 0;
+		auto histogram1d_pair = reduce1d(force);
 		for (int x = 0; x < binsX; ++x)
 		{
 			for (int y = 0; y < binsY; ++y)
 			{
-				if (H[x][y] > 0)
+				if (histData[x][y] > 0)
 				{
-					T p_xy = T(H[x][y]) / count;
-					T p_x = T(h.first->getHistogram()[x]) / count;
-					T p_y = T(h.second->getHistogram()[y]) / count;
+					Precision p_xy = Precision(histData[x][y]) / elementCount;
+					Precision p_x = Precision(histogram1d_pair.first->getHistogramData()[x]) / elementCount;
+					Precision p_y = Precision(histogram1d_pair.second->getHistogramData()[y]) / elementCount;
 					mi += p_xy * std::log2(p_xy / (p_x * p_y));
 				}
 			}
 		}
-		mutual_information.reset(new T(mi));
+		mutualInformation.reset(new Precision(mi));
 	}
-	return mutual_information.get();
+	return mutualInformation.get();
 }

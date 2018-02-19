@@ -21,6 +21,45 @@
 #include <climits>
 #include <algorithm>
 #include "../src/utilities.h"
+#include "../src/Histogram1d.h"
+
+TEST_CASE("Compare Histogram1d and calculate_indices_1d", "[compare_to_histogram1d]")
+{
+	std::vector<float> input(1000);
+	for (int i = 0; i < 1000; ++i)
+	{
+		input[i] = float(i) - 500.f;
+	}
+	DataRange<float> dataRange(-500.f, 499.f);
+	Histogram1d<float> hist_with_indices(10, dataRange);
+	hist_with_indices.increment(indices.begin(), indices.end());
+	auto result_with_indices = hist_with_indices.getHistogramData();
+	REQUIRE(hist_with_indices.getElementCount() == 1000);
+	REQUIRE(std::equal(result.begin(), result.end(), result_with_indices.begin()));
+}
+
+TEST_CASE("Compare Histogram2d and calculate_indices_1d", "[compare_to_histogram2d]")
+{
+	std::vector<float> inputX(800);
+	for (int i = 0; i < 800; ++i)
+	{
+		inputX[i] = float(i) - 500.f;
+	}
+	std::vector<float> inputY(800);
+	for (int i = 0; i < 800; ++i)
+	{
+		inputY[i] = float(i) - 400.f;
+	}
+	DataRange2D<float> dataRange(inputX.front(), inputX.back(), inputY.front(), inputY.back());
+	auto indices = calculate_indices_2d(
+		10, 10,
+		dataRange,
+		inputX.begin(), inputX.end(), inputY.begin(), inputY.end());
+	Histogram2d<float> hist_with_indices(10, 10, dataRange);
+	auto result_with_indices = hist_with_indices.getHistogram();
+	REQUIRE(hist_with_indices.getElementCount() == 800);
+	REQUIRE(std::equal(result.begin(), result.end(), result_with_indices.begin()));
+}
 
 TEST_CASE( "Test calculation of indices in 1 dimension.", "[calculate_indices_1d]" )
 {

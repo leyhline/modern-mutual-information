@@ -40,7 +40,7 @@ IF(CMAKE_CROSSCOMPILING)
 ENDIF(CMAKE_CROSSCOMPILING)
 
 #add_executable(run_tests ${TEST_SOURCES})
-add_executable(run_tests test/test_main.cpp test/Histogram1d_test.cpp)
+add_executable(run_tests test/test_main.cpp test/Histogram1d_test.cpp test/Histogram2d_test.cpp)
 add_executable(shiftmi main.cpp)
 
 # Automatically run tests after compilation if possible.
