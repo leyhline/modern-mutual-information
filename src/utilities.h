@@ -27,57 +27,21 @@
 #include <chrono>
 
 #include "Histogram2d.h"
+#include "containers.h"
+
+// Short handler for the specifyed random number generator.
+typedef std::mt19937 RandomNumberGenerator;
 
 /**
  * Calculates the histogram indices of a certain data container.
- * @param bins Number of bins for the imaginary histogram.
- * @param min Minimum value in data container.
- * @param max Maximum value in data container.
- * @param begin Iterator to the beginning of the data.
- * @param end Iterator to the end of the data.
  * @return A vector with the same size as the data holding the index positions.
  * 	       If there is a value outside the [min,max] range UINT_MAX is inserted
  * 	       at this position.
  */
-template<typename T, typename Iterator>
-std::vector<int> calculate_indices_1d(
-		const int bins,
-		const T min, const T max,
-		const Iterator begin, const Iterator end);
-
-/**
- * Small struct for simply holding two index values.
- */
-struct index_pair
-{
-	int first;
-	int second;
-};
-
-/**
- * Calculate indices of a 2d histogram for a certain data container.
- * @param binsX Number of bins on imaginary histogram's x-axis.
- * @param binsY Number of bins on imaginary histogram's y-axis.
- * @param minX Minimum value in first data container.
- * @param maxX Maximum value in first data container.
- * @param minY Minimum value in second data container.
- * @param maxY Maximum value in second data container.
- * @param beginX Iterator to the beginning of the first data container.
- * @param endX Iterator to the end of the first data container.
- * @param beginY Iterator to the beginning of the second data container.
- * @param endY Iterator to the end of the second data container.
- * 			   Both containers must have the same size.
- * @return Vector of index_pair structs. The vector has the same size as the data.
- *         If there is a value outside the [min,max] range index_pair {UINT_MAX, UINT_MAX}
- *         is inserted at this position.
- */
-template<typename T, typename Iterator>
-std::vector<index_pair> calculate_indices_2d(
-		const int binsX, const int binsY,
-		const T minX, const T maxX,
-		const T minY, const T maxY,
-		const Iterator beginX, const Iterator endX,
-		const Iterator beginY, const Iterator endY);
+template<typename Precision, typename Iterator>
+std::vector<int> calculate_indices(
+	int nrBins, DataRange<Precision> dataRange,
+	const Iterator begin, const Iterator end);
 
 /**
  * Calculate a certain range of mutual information by shifting the second data container
@@ -94,27 +58,23 @@ std::vector<index_pair> calculate_indices_2d(
  * @param shift_from Negative (or positive) value for specifying the largest shift to the left.
  * @param shift_to Positive (of negative) value for specifying the largest shift to the right.
  * 	      Has to be greater than shift_from.
- * @param minX Minimum value in first data container.
- * @param maxX Maximum value in first data container.
- * @param minY Minimum value in second data container.
- * @param maxY Maximum value in second data container.
  * @param beginX Iterator to the beginning of the first data container.
  * @param endX Iterator to the end of the first data container.
  * @param beginY Iterator to the beginning of the second data container.
  * @param endY Iterator to the end of the second data container.
  * 			   Both containers must have the same size.
+ * @param dataRange (Optional) Container specifying the range of the processed data.
  * @param shift_step (Optional) Specifies the steps between shifts. Default = 1.
  * @return Vector with size (shift_to - shift_from) holding the mutual information for each shift.
- * 		   Might be smaller if shift_step is specified.
+ * 		   Is smaller if shift_step is specified.
  */
-template<typename T, typename Iterator>
+template<typename Precision, typename Iterator>
 std::vector<T> shifted_mutual_information(
-		const int shift_from, const int shift_to,
-		const int binsX, const int binsY,
-		const T minX, const T maxX, const T minY, const T maxY,
-		const Iterator beginX, const Iterator endX,
-		const Iterator beginY, const Iterator endY,
-		const int shift_step = 1);
+	int shift_from, int shift_to, int binsX, int binsY,
+	const Iterator beginX, const Iterator endX,
+	const Iterator beginY, const Iterator endY,
+	DataRange2D<Precision> dataRange,
+	int shift_step = 1);
 
 /**
  * Calculates the mutual information of the two given data vectors X and Y
@@ -123,12 +83,12 @@ std::vector<T> shifted_mutual_information(
  * and adding them together.
  * Helper function for shifted_mutual_information_with_bootstrap.
  */
-template<typename T, typename Iterator>
+template<typename Precision, typename Iterator>
 T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const Iterator beginY, const Iterator endY,
-				  const int binsX, const int binsY,
-				  const T minX, const T maxX, const T minY, const T maxY,
-				  int nr_samples, std::mt19937& rgen);
+				  int binsX, int binsY,
+				  DataRange2D<Precision> dataRange,
+				  int nr_samples, RandomNumberGenerator& rgen);
 
 /**
  * Similar to shifted_mutual_information but additionally uses bootstrapping
@@ -136,50 +96,43 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
  * @param nr_samples How many temporary histograms to generate by sampling the data.
  * @param nr_repetitions How many times to repeat this process to minimize noise.
  * @return A vector of size `(shift_to - shift_from) / shift_step + 1`
-	holding vectors of size `nr_repetitions` with the mutual information.
+ *         holding vectors of size `nr_repetitions` with the mutual information.
  */
-template<typename T, typename Iterator>
-std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
-		const int shift_from, const int shift_to,
-		const int binsX, const int binsY,
-		const T minX, const T maxX, const T minY, const T maxY,
+template<typename Precision, typename Iterator>
+std::vector< std::vector<Precision> > shifted_mutual_information_with_bootstrap(
+		int shift_from, int shift_to, int binsX, int binsY,
 		const Iterator beginX, const Iterator endX,
 		const Iterator beginY, const Iterator endY,
 		int nr_samples, int nr_repetitions,
+		DataRange2D<Precision> dataRange,
 		const int shift_step = 1);
 
 /**
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
  * The values specified by beginX, endX, beginY, endY are the histogram indices in range [0, nr_bins).
- * @param output A pointer to to a vector of size (shift_to - shift_from) / shift_step + 1
+ * @param output A pointer to to a vector of size `(shift_to - shift_from) / shift_step + 1`
  */
-template<typename T>
+template<typename Precision>
 void shifted_mutual_information(
-	    const int shift_from, const int shift_to,
-		const int binsX, const int binsY,
-		const T minX, const T maxX, const T minY, const T maxY,
+	    int shift_from, int shift_to, int binsX, int binsY,
 		const int* beginX, const int* endX,
 		const int* beginY, const int* endY,
-		const int shift_step,
-		T* output);
+		int shift_step, Precision* output);
 
 /**
  * This is for the matlab mex interface:
  * Instead of returning a vector the result is written to a pointer location.
  * The values specified by beginX, endX, beginY, endY are the histogram indices in range [0, nr_bins).
- * @param output A pointer to to a vector of size ((shift_to - shift_from) / shift_step + 1) * nr_repetitions
+ * @param output A pointer to to a vector of size `((shift_to - shift_from) / shift_step + 1) * nr_repetitions`
  */
-template<typename T>
+template<typename Precision>
 void shifted_mutual_information_with_bootstrap(
-		const int shift_from, const int shift_to,
-		const int binsX, const int binsY,
-		const T minX, const T maxX, const T minY, const T maxY,
+		int shift_from, int shift_to, int binsX, int binsY,
 		const int* beginX, const int* endX,
 		const int* beginY, const int* endY,
 		int nr_samples, int nr_repetitions,
-		const int shift_step,
-		T* output);
+		int shift_step, Precision* output);
 
 //////////////////
 /// IMPLEMENTATION
