@@ -20,8 +20,8 @@
 #include <vector>
 #include <algorithm>
 #include "../src/Histogram1d.h"
+#include "../src/containers.h"
 #include "../src/utilities.h"
-
 
 TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histogram1d]" )
 {
@@ -30,14 +30,16 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	{
 		input[i] = float(i) - 500.f;
 	}
-	Histogram1d<float> hist(10, -500.f, 499.f);
-	REQUIRE( hist.getBins() == 10 );
-	REQUIRE( hist.getMin() == Approx(-500.f) );
-	REQUIRE( hist.getMax() == Approx(499.f) );
-	CHECK( hist.getCount() == 0 );
-	hist.calculate_cpu(input.begin(), input.end());
-	auto result = hist.getHistogram();
-	CHECK( hist.getCount() == 1000 );
+	DataRange<float> dataRange(-500.f, 499.f);
+	Histogram1d<float> hist(10, dataRange);
+	REQUIRE( hist.getNrBins() == 10 );
+	DataRange<float> returnedDataRange = hist.getDataRange();
+	REQUIRE( returnedDataRange.getMin() == Approx(-500.f) );
+	REQUIRE( returnedDataRange.getMax() == Approx(499.f) );
+	CHECK( hist.getElementCount() == 0 );
+	hist.calculate(input.begin(), input.end());
+	auto result = hist.getHistogramData();
+	CHECK( hist.getElementCount() == 1000 );
 	CHECK( result[0] == 100 );
 	CHECK( result[1] == 100 );
 	CHECK( result[2] == 100 );
@@ -49,18 +51,19 @@ TEST_CASE( "Test Histogram for linear values -500 to 500 with 10 bins.", "[Histo
 	CHECK( result[8] == 100 );
 	CHECK( result[9] == 100 );
 
-	Histogram1d<float> hist_1bin(1, -500, 500);
-	hist_1bin.calculate_cpu(input.begin(), input.end());
-	auto result_1bin = hist_1bin.getHistogram();
+	DataRange<float> dataRange2(-500.f, 500.f);
+	Histogram1d<float> hist_1bin(1, dataRange2);
+	hist_1bin.calculate(input.begin(), input.end());
+	auto result_1bin = hist_1bin.getHistogramData();
 	CHECK( result_1bin[0] == 1000 );
 
-	Histogram1d<float> hist_copy(1, -500, 500, result_1bin, 1000);
-	CHECK( hist_copy.getHistogram()[0] == 1000 );
+	Histogram1d<float> hist_copy(1, dataRange2, result_1bin, 1000);
+	CHECK( hist_copy.getHistogramData()[0] == 1000 );
 
 	auto indices = calculate_indices_1d(10, -500.f, 499.f, input.begin(), input.end());
-	Histogram1d<float> hist_with_indices(10, -500.f, 499.f);
-	hist_with_indices.increment_cpu(indices.begin(), indices.end());
-	auto result_with_indices = hist_with_indices.getHistogram();
-	REQUIRE( hist_with_indices.getCount() == 1000 );
+	Histogram1d<float> hist_with_indices(10, dataRange);
+	hist_with_indices.increment(indices.begin(), indices.end());
+	auto result_with_indices = hist_with_indices.getHistogramData();
+	REQUIRE( hist_with_indices.getElementCount() == 1000 );
 	REQUIRE( std::equal(result.begin(), result.end(), result_with_indices.begin()) );
 }

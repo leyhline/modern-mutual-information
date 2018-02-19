@@ -21,93 +21,61 @@
 #include <vector>
 #include <stdexcept>
 #include <cstddef>
+#include "containers.h"
 
 /**
  * A class for 1D-histogram calculation.
  * Usable for all integral types.
  */
-template<typename T>
-	// requires Integral<T>
+template<typename Precision>
+	// requires Integral<Precision>
 class Histogram1d
 {
 public:
-	/**
-	 * Constructor for known range of values.
-	 * If there are values outside of [min,max] they are ignored at insertion.
-	 * @param bins Number of bins.
-	 * @param min Minimum value in data vector.
-	 * @param max Maximum value in data vector.
-	 */
-	Histogram1d(int bins, T min, T max);
+	Histogram1d(int nrBins, DataRange<Precision> dataRange);
+
+	Histogram1d(int nrBins, DataRange<Precision> dataRange,
+			    std::vector<int> histData, int elementCount);
 
 	/**
-	 * Construct class from already available histogram data.
-	 * @param bins Number of bins.
-	 * @param min Minimum value in data array.
-	 * @param max Maximum value in data array.
-	 * @param H Histogram vector holding the bins.
-	 * @param count Total number of values in histogram.
-	 */
-	Histogram1d(int bins, T min, T max,
-			std::vector<int> H, int count);
-
-	/**
-	 * Calculate the histogram single-threaded on the CPU.
+	 * Calculate the histogram from data.
 	 * @param begin Iterator to the beginning of the data.
 	 * @param end Iterator to the end of the data.
 	 */
 	template<typename Iterator>
-	void calculate_cpu(const Iterator begin, const Iterator end);
+	void calculate(const Iterator begin, const Iterator end);
 
 	/**
 	 * Given an iterator (type: int) holding index positions, this methods increments
-	 * the histogram at for each position by one.
+	 * the histogram for each value by one.
 	 * If the index position is smaller than the bin number no insertion takes place.
 	 * @param begin Iterator to the beginning of the index data.
 	 * @param end: Iterator to the end of the index data.
 	 */
 	template<typename Iterator>
-	void increment_cpu(const Iterator begin, const Iterator end);
+	void increment(const Iterator begin, const Iterator end);
 
-	/**
-	 * Get bin count as specified in constructor.
-	 */
-	int getBins() const;
+	int getNrBins() const;
 
-	/**
-	 * Get total number of values inserted into histogram.
-	 */
-	int getCount() const;
+	int getElementCount() const;
 
-	/**
-	 * Get reference to histogram vector.
-	 */
-	const std::vector<int>& getHistogram() const;
+	const std::vector<int>& getHistogramData() const;
 
-	/**
-	 * Get (supposed) maximum value of the data.
-	 */
-	T getMax() const;
-
-	/**
-	 * Get (supposed) minimum value of the data.
-	 */
-	T getMin() const;
+	DataRange<Precision> getDataRange() const;
 
 private:
-	const int bins;
-	int count;
-	const T min;
-	const T max;
-	std::vector<int> H;
+	const int nrBins;
+	int elementCount;
+	const DataRange<Precision> dataRange;
+	std::vector<int> histData;
 
 	/**
 	 * Transfer function for actually doing the insertion into H.
 	 * @param value Increment histogram for this value.
 	 */
-	void transfer(const T value);
+	inline void transfer(const Precision value);
 
-	void check_constructor() const;
+	void checkConstructor() const;
 };
 
 
@@ -115,100 +83,96 @@ private:
 /// IMPLEMENTATION
 //////////////////
 
-template<typename T>
-Histogram1d<T>::Histogram1d(int bins, T min, T max)
-	: bins(bins), count(0), min(min), max(max)
+template<typename Precision>
+Histogram1d<Precision>::Histogram1d(int nrBins, DataRange<Precision> dataRange)
+	: nrBins(nrBins), elementCount(0), dataRange(dataRange)
 {
-	check_constructor();
-	H.resize(bins, 0);
+	checkConstructor();
+	histData.resize(nrBins, 0);
 }
 
-template<typename T>
-Histogram1d<T>::Histogram1d(int bins, T min, T max,
-	std::vector<int> H, int count)
-	: bins(bins), count(count), min(min), max(max), H(H)
+template<typename Precision>
+Histogram1d<Precision>::Histogram1d(int nrBins, DataRange<Precision> dataRange,
+								    std::vector<int> histData, int elementCount)
+	: nrBins(nrBins), elementCount(elementCount), dataRange(dataRange), histData(histData)
 {
-	check_constructor();
-	// Casting bins to size_type because it can't be negative thanks to check_constructor method.
-	if (H.size() != std::vector<int>::size_type(bins))
-		throw std::invalid_argument("Argument bins has to be of same size as H vector.");
+	checkConstructor();
+	// Casting bins to size_type because it can't be negative thanks to checkConstructor method.
+	if (histData.size() != std::vector<int>::size_type(nrBins))
+		throw std::invalid_argument("Argument bins has to be of same size as HistData vector.");
 }
 
-template<typename T>
+template<typename Precision>
 template<typename Iterator>
-void Histogram1d<T>::calculate_cpu(const Iterator begin, const Iterator end)
+void Histogram1d<Precision>::calculate(const Iterator begin, const Iterator end)
 {
 	for (auto i = begin; i != end; ++i)
 		transfer(*i);
 }
 
-template<typename T>
+template<typename Precision>
 template<typename Iterator>
-void Histogram1d<T>::increment_cpu(const Iterator begin, const Iterator end)
+void Histogram1d<Precision>::increment(const Iterator begin, const Iterator end)
 {
 	for (auto index = begin; index != end; ++index)
 	{
-		if (*index < bins)
+		if (*index < nrBins)
 		{
-			++H[*index];
-			++count;
+			++histData[*index];
+			++elementCount;
 		}
 	}
 }
 
-template<typename T>
-int Histogram1d<T>::getBins() const
+template<typename Precision>
+int Histogram1d<Precision>::getNrBins() const
 {
-	return bins;
+	return nrBins;
 }
 
-template<typename T>
-int Histogram1d<T>::getCount() const
+template<typename Precision>
+int Histogram1d<Precision>::getElementCount() const
 {
-	return count;
+	return elementCount;
 }
 
-template<typename T>
-const std::vector<int>& Histogram1d<T>::getHistogram() const
+template<typename Precision>
+const std::vector<int>& Histogram1d<Precision>::getHistogramData() const
 {
-	return H;
+	return histData;
 }
 
-template<typename T>
-T Histogram1d<T>::getMax() const
+template<typename Precision>
+DataRange<Precision> Histogram1d<Precision>::getDataRange() const
 {
-	return max;
+	return dataRange;
 }
 
-template<typename T>
-T Histogram1d<T>::getMin() const
+template<typename Precision>
+void Histogram1d<Precision>::transfer(const Precision value)
 {
-	return min;
-}
-
-template<typename T>
-void Histogram1d<T>::transfer(const T value)
-{
+	Precision min = dataRange.getMin();
+	Precision max = dataRange.getMax();
 	if (value >= min && value < max)
 	{
-		T normalized = (value - min) / (max - min);
+		Precision normalized = (value - min) / (max - min);
 #pragma warning(suppress: 4244)
-		int index = normalized * bins;  // Implicit conversion to integer.
-		++H[index];
-		++count;
+		int index = normalized * nrBins;  // Implicit conversion to integer.
+		++histData[index];
+		++elementCount;
 	}
 	else if (value == max)
 	{
-		++H.back();
-		++count;
+		++histData.back();
+		++elementCount;
 	}
 }
 
-template<typename T>
-void Histogram1d<T>::check_constructor() const
+template<typename Precision>
+void Histogram1d<Precision>::checkConstructor() const
 {
-	if (min >= max)
+	if (dataRange.getMin() >= dataRange.getMax())
 		throw std::logic_error("min has to be smaller than max.");
-	if (bins < 1)
+	if (nrBins < 1)
 		throw std::invalid_argument("There must be at least one bin.");
 }

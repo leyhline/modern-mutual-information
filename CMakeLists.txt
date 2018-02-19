@@ -39,10 +39,12 @@ IF(CMAKE_CROSSCOMPILING)
     SET(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 ENDIF(CMAKE_CROSSCOMPILING)
 
-add_executable(run_tests ${TEST_SOURCES})
+#add_executable(run_tests ${TEST_SOURCES})
+add_executable(run_tests test/test_main.cpp test/Histogram1d_test.cpp)
 add_executable(shiftmi main.cpp)
 
 # Automatically run tests after compilation if possible.
 IF(NOT CMAKE_CROSSCOMPILING)
-    add_custom_command(TARGET shiftmi POST_BUILD COMMAND run_tests)
+    #add_custom_command(TARGET shiftmi POST_BUILD COMMAND run_tests)
+	add_custom_command(TARGET run_tests POST_BUILD COMMAND run_tests)
 ENDIF(NOT CMAKE_CROSSCOMPILING)
