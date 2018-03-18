@@ -124,11 +124,11 @@ std::vector<T> shifted_mutual_information(
  * Helper function for shifted_mutual_information_with_bootstrap.
  */
 template<typename T, typename Iterator>
-T bootstrapped_mi(const Iterator beginX, const Iterator endX,
+std::vector<T> bootstrapped_mi(const Iterator beginX, const Iterator endX,
 				  const Iterator beginY, const Iterator endY,
 				  const int binsX, const int binsY,
 				  const T minX, const T maxX, const T minY, const T maxY,
-				  int nr_samples, std::mt19937& rgen);
+				  int nr_samples, int nr_repetitions, std::mt19937& rgen);
 
 /**
  * Similar to shifted_mutual_information but additionally uses bootstrapping
@@ -347,11 +347,11 @@ std::vector<T> shifted_mutual_information(
 }
 
 template<typename T, typename Iterator>
-T bootstrapped_mi(const Iterator beginX, const Iterator endX,
+std::vector<T> bootstrapped_mi(const Iterator beginX, const Iterator endX,
 	const Iterator beginY, const Iterator endY,
 	const int binsX, const int binsY,
 	const T minX, const T maxX, const T minY, const T maxY,
-	int nr_samples, std::mt19937& rgen)
+	int nr_samples, int nr_repetitions, std::mt19937& rgen)
 {
 	size_t sizeX = std::distance(beginX, endX);
 	size_t sizeY = std::distance(beginY, endY);
@@ -373,18 +373,23 @@ T bootstrapped_mi(const Iterator beginX, const Iterator endX,
 	}
 	// Now sample these histograms again and add them together.
 	std::uniform_int_distribution<int> uniform_from_samples(0, nr_samples - 1);
-	Histogram2d<T> final_hist(binsX, binsY, minX, maxX, minY, maxY);
-	for (int sample = 0; sample < nr_samples; ++sample)
+	std::vector<T> results(nr_repetitions);
+	for (int i = 0; i < nr_repetitions; ++i)
 	{
-		int sampleidx = uniform_from_samples(rgen);
-		final_hist.add(*hist3d[sampleidx]);
+		Histogram2d<T> final_hist(binsX, binsY, minX, maxX, minY, maxY);
+		for (int sample = 0; sample < nr_samples; ++sample)
+		{
+			int sampleidx = uniform_from_samples(rgen);
+			final_hist.add(*hist3d[sampleidx]);
+		}
+		results[i] = *final_hist.calculate_mutual_information();
 	}
 	// Cleanup (even though using raw pointers is not really elegant)
 	for (int sample = 0; sample < nr_samples; ++sample)
 	{
 		delete hist3d[sample];
 	}
-	return *final_hist.calculate_mutual_information();
+	return results;
 }
 
 template<typename T, typename Iterator>
@@ -411,36 +416,32 @@ std::vector< std::vector<T> > shifted_mutual_information_with_bootstrap(
 	auto indX_end = indicesX.end();
 	auto indY_begin = indicesY.begin();
 	auto indY_end = indicesY.end();
-	std::vector< std::vector<T> > result((shift_to - shift_from) / shift_step + 1,
-										 std::vector<T>(nr_repetitions));
+	std::vector< std::vector<T> > result((shift_to - shift_from) / shift_step + 1);
 #pragma omp parallel for
 	for (int i = shift_from; i <= shift_to; i += shift_step)
 	{
 		unsigned int seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 rgen(seed);
-		for (int j = 0; j < nr_repetitions; ++j)
+		std::vector<T> mi;
+		if (i < 0)
 		{
-			T mi;
-			if (i < 0)
-			{
-				mi = bootstrapped_mi<T>(indX_begin, std::prev(indX_end, -i),
-					std::next(indY_begin, -i), indY_end,
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			else if (i > 0)
-			{
-				mi = bootstrapped_mi<T>(std::next(indX_begin, i), indX_end,
-					indY_begin, std::prev(indY_end, i),
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			else // Should not be necessary but better be explicit.
-			{
-				mi = bootstrapped_mi<T>(indX_begin, indX_end,
-					indY_begin, indY_end,
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			result[(i - shift_from) / shift_step][j] = mi;
+			mi = bootstrapped_mi<T>(indX_begin, std::prev(indX_end, -i),
+				std::next(indY_begin, -i), indY_end,
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
 		}
+		else if (i > 0)
+		{
+			mi = bootstrapped_mi<T>(std::next(indX_begin, i), indX_end,
+				indY_begin, std::prev(indY_end, i),
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			mi = bootstrapped_mi<T>(indX_begin, indX_end,
+				indY_begin, indY_end,
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
+		}
+		result[(i - shift_from) / shift_step] = mi;
 	}
 	return result;
 }
@@ -506,28 +507,28 @@ void shifted_mutual_information_with_bootstrap(
 	{
 		unsigned int seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		std::mt19937 rgen(seed);
-		for (int j = 0; j < nr_repetitions; ++j)
+		std::vector<T> mi;
+		if (i < 0)
 		{
-			T mi;
-			if (i < 0)
-			{
-				mi = bootstrapped_mi<T>(beginX, std::prev(endX, -i),
-					std::next(beginY, -i), endY,
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			else if (i > 0)
-			{
-				mi = bootstrapped_mi<T>(std::next(beginX, i), endX,
-					beginY, std::prev(endY, i),
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			else // Should not be necessary but better be explicit.
-			{
-				mi = bootstrapped_mi<T>(beginX, endX,
-					beginY, endY,
-					binsX, binsY, minX, maxX, minY, maxY, nr_samples, rgen);
-			}
-			output[((i - shift_from) / shift_step) * nr_repetitions + j] = mi;
+			mi = bootstrapped_mi<T>(beginX, std::prev(endX, -i),
+				std::next(beginY, -i), endY,
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
+		}
+		else if (i > 0)
+		{
+			mi = bootstrapped_mi<T>(std::next(beginX, i), endX,
+				beginY, std::prev(endY, i),
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
+		}
+		else // Should not be necessary but better be explicit.
+		{
+			mi = bootstrapped_mi<T>(beginX, endX,
+				beginY, endY,
+				binsX, binsY, minX, maxX, minY, maxY, nr_samples, nr_repetitions, rgen);
+		}
+		for (int j = 0; j < nr_repetitions; ++j) // Copy result to output.
+		{
+			output[((i - shift_from) / shift_step) * nr_repetitions + j] = mi[j];
 		}
 	}
 }

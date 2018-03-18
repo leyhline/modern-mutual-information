@@ -131,3 +131,53 @@ TEST_CASE( "Exact test on small set of triangle data." "[shifted_mutual_informat
 	CHECK( result[9] == Approx(1.30985808f) );
 	CHECK( result[10] == Approx(0.954434f) );
 }
+
+template<typename T, typename Iterator>
+inline T calc_mean(Iterator begin, Iterator end)
+{
+	T mean = 0;
+	size_t size = std::distance(begin, end);
+	for (size_t i = 0; i < size; ++i)
+	{
+		mean += begin[i];
+	}
+	return mean / T(size);
+}
+
+template<typename T, typename Iterator>
+inline T calc_std(Iterator begin, Iterator end, T mean)
+{
+	T std = 0;
+	size_t size = std::distance(begin, end);
+	for (size_t i = 0; i < size; ++i)
+	{
+		T temp = begin[i] - mean;
+		std += temp * temp;
+	}
+	return std::sqrt(std / T(size));
+}
+
+TEST_CASE("Shifted mutual information with bootstrapping on sinoid data." "[shifted_mutual_information_with_bootstrap]")
+{
+	std::vector<float> data(1000);
+	float value = 0;
+	for (auto& d : data)
+	{
+		d = std::sin(value);
+		value += 0.01f;
+	}
+	auto result = shifted_mutual_information_with_bootstrap(-100, 100, 10, 10, -1.f, 1.f, -1.f, 1.f,
+		data.begin(), data.end(), data.begin(), data.end(), 100, 100);
+	REQUIRE(result.size() == 201);
+	REQUIRE(result[0].size() == 100);
+	std::vector<float> mean(201);
+	std::vector<float> std(201);
+	for (int i = 0; i < 201; ++i)
+	{
+		mean[i] = calc_mean<float>(result[i].begin(), result[i].end());
+	}
+	for (int i = 0; i < 201; ++i)
+	{
+		std[i] = calc_std<float>(result[i].begin(), result[i].end(), mean[i]);
+	}
+}
